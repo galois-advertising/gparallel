@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(lldb) gparalled",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/gparallel",
+            "args": [""],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "lldb"
+        }
+    ]
+}
