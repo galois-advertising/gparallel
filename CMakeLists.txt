@@ -24,7 +24,13 @@ set(CMAKE_BUILD_TYPE "Release")
 include_directories("${PROJECT_SOURCE_DIR}/include")
 include_directories("${PROJECT_SOURCE_DIR}/")
 
+enable_testing()
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
+
 
 add_executable(gparallel
-"${PROJECT_SOURCE_DIR}/src/main.cpp" 
+"${PROJECT_SOURCE_DIR}/test/main.cpp" 
+"${PROJECT_SOURCE_DIR}/test/test_invoke_ex.cpp" 
 )
+target_link_libraries(gparallel ${GTEST_BOTH_LIBRARIES})
