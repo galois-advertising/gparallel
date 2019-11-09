@@ -1,13 +1,23 @@
 #pragma once
-#include <iostream>
-#include <string>
-#include <cxxabi.h>
-#include <memory>
 #include <type_traits>
-#include <functional>
+/***************************************************************************
+*  An extended version of std::invoke, support pass parameters in any order.
+*  solopointer1202@gmail.com
+*  2019.11.09 14:55:41
+****************************************************************************/
+// R: Type of return value
+// F: Type of function
+// T: Type
+// I: One int 
+// IS: Multiple int
+// A: One argument's type
+// AS: Type of multiple arguments
+// CS: Type of multiple value candidates
+// MS: Type of matched types
+
+namespace galois::gparallel {
 
 template <class... type> struct type_list {};
-
 template <class T, int I, class... AS>
 struct find_index {
     typedef char type[I];
@@ -47,14 +57,15 @@ struct parameter_match_invoke {};
 template <class R, class F, class... CS, class... MS, int I, int... IS>
 struct parameter_match_invoke<R, F, type_list<CS...>, type_list<MS...>, I, IS...> {
     typedef typename n_th<I, CS...>::type Match;
-    static R process(F fn, CS... cs, MS ... matches) {
-        return parameter_match_invoke<R, F, type_list<CS...>, type_list<MS..., Match>, IS...>::process(fn, cs..., matches..., n_th<I, CS...>::value(cs...));
+    static R process(F fn, CS... cs, MS ... ms) {
+        return parameter_match_invoke<R, F, type_list<CS...>, type_list<MS..., Match>, IS...>::process(fn, 
+            cs..., ms..., n_th<I, CS...>::value(cs...));
     }
 };
 template <class R, class... CS, class... MS, class... AS>
 struct parameter_match_invoke<R, R(*)(AS...), type_list<CS...>, type_list<MS...>> {
-    static R process(R(*fn)(AS...), CS ... , MS ... matches) {
-        return fn(matches...);
+    static R process(R(*fn)(AS...), CS ... , MS ... ms) {
+        return fn(ms...);
     }
 };
 
@@ -84,3 +95,5 @@ template <class R, class... AS, class... CS>
 R invoke_ex(R(*fn)(AS...), CS... cs) {
     return parameter_match<R, R(*)(AS...), type_list<AS...>, type_list<CS...>>::process(fn, cs...);
 };
+
+}

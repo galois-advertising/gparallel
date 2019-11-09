@@ -14,6 +14,7 @@ int fn(A a, B b, C c, D d)
 }
 
 TEST(Test, invoke_ex) {
+    using namespace galois::gparallel;
     A a;
     B b;
     C c;
