@@ -22,6 +22,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -std=c++2a -fno-strict-ali
 set(CMAKE_BUILD_TYPE "Release")
 
 include_directories("${PROJECT_SOURCE_DIR}/include")
+include_directories("${PROJECT_SOURCE_DIR}/src")
 include_directories("${PROJECT_SOURCE_DIR}/")
 
 enable_testing()
@@ -37,5 +38,8 @@ add_executable(gparallel
 "${PROJECT_SOURCE_DIR}/test/test_type_id.cpp" 
 "${PROJECT_SOURCE_DIR}/test/test_node.cpp" 
 "${PROJECT_SOURCE_DIR}/test/test_deduce.cpp" 
+"${PROJECT_SOURCE_DIR}/test/test_register_node.cpp" 
+"${PROJECT_SOURCE_DIR}/src/node_container.cpp" 
+"${PROJECT_SOURCE_DIR}/src/node_info.cpp" 
 )
 target_link_libraries(gparallel ${GTEST_BOTH_LIBRARIES})
