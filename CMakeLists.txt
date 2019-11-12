@@ -31,6 +31,15 @@ include_directories(${GTEST_INCLUDE_DIRS})
 
 add_executable(gparallel
 "${PROJECT_SOURCE_DIR}/test/main.cpp" 
+<<<<<<< HEAD:CMakeLists.txt
 "${PROJECT_SOURCE_DIR}/test/test_invoke_ex.cpp" 
+=======
+"${PROJECT_SOURCE_DIR}/src/util.cpp" 
+"${PROJECT_SOURCE_DIR}/test/test_invoke_ex.cpp" 
+"${PROJECT_SOURCE_DIR}/test/test_data_meta.cpp" 
+"${PROJECT_SOURCE_DIR}/test/test_type_id.cpp" 
+"${PROJECT_SOURCE_DIR}/test/test_node.cpp" 
+"${PROJECT_SOURCE_DIR}/test/test_deduce.cpp" 
+>>>>>>> feature:CMakeLists.txt
 )
 target_link_libraries(gparallel ${GTEST_BOTH_LIBRARIES})

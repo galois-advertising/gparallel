@@ -96,4 +96,8 @@ R invoke_ex(R(*fn)(AS...), CS... cs) {
     return parameter_match<R, R(*)(AS...), type_list<AS...>, type_list<CS...>>::process(fn, cs...);
 };
 
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> feature
