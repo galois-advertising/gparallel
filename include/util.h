@@ -4,8 +4,6 @@
 #include <string>
 #include <memory>
 #include <cxxabi.h>
-//#include "parameter_traits.h"
-//#include "data_meta_decorater.h"
 #include "type_id.h"
 
 namespace galois::gparallel 
@@ -35,6 +33,7 @@ struct io_description {
 };
 template <class D, template <class> class... MS> struct meta_info_list {};
 template <template <class> class... TMPS> struct template_list {};
+template <class... TS> struct type_list {};
 std::string demangle(const char* name);
 
 template <class T>
@@ -128,5 +127,10 @@ void push_io(io_description & iodes) {
         }
     }
 };
+
+class node;
+typedef void(*batch_function_type)(node&);
+typedef void(*query_function_type)(node&);
+typedef void(*end_function_type)(node&);
 
 }
