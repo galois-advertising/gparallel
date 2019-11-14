@@ -7,6 +7,7 @@
 
 namespace galois::gparallel
 {
+typedef int type_id_t;
 std::string demangle(const char* name);
 // For every tag, the id is global uniqe
 template <class tag>
@@ -27,6 +28,12 @@ public:
             return pos->second;
         static std::string error_id("ErrorId");
         return error_id;
+    }
+    auto begin() {
+        return _id2name.begin();
+    }
+    auto end() {
+        return _id2name.end();
     }
 private:
     typeid_manager() : _typeid(0) {}

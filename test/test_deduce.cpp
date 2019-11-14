@@ -63,31 +63,31 @@ TEST(Test, deduce) {
     {
         std::cout<<"-----NodeA-----"<<std::endl;
         io_description vec;
-        deduce_depends<auto_type, NodeA>::deduce_io(vec);
+        deduce_depends<auto_type, NodeA>::deduce(vec);
         show(vec);
     }
     {
         std::cout<<"-----NodeB-----"<<std::endl;
         io_description vec;
-        deduce_depends<auto_type, NodeB>::deduce_io(vec);
+        deduce_depends<auto_type, NodeB>::deduce(vec);
         show(vec);
     }
     {
         std::cout<<"-----NodeC-----"<<std::endl;
         io_description vec;
-        deduce_depends<auto_type, NodeC>::deduce_io(vec);
+        deduce_depends<auto_type, NodeC>::deduce(vec);
         show(vec);
     }
     {
         std::cout<<"-----NodeD-----"<<std::endl;
         io_description vec;
-        deduce_depends<auto_type, NodeD>::deduce_io(vec);
+        deduce_depends<auto_type, NodeD>::deduce(vec);
         show(vec);
     }
     {
         std::cout<<"-----NodeE-----"<<std::endl;
         io_description vec;
-        deduce_depends<auto_type, NodeE>::deduce_io(vec);
+        deduce_depends<auto_type, NodeE>::deduce(vec);
         show(vec);
     }
 }

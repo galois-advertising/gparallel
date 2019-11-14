@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <typeinfo>
+#include <iostream>
 #include <cxxabi.h>
 #include "type_id.h"
 
@@ -13,28 +15,43 @@ struct none_type {};
 struct auto_type {};
 
 std::string demangle(const char* name);
+enum LOG_LEVEL {
+    FATAL,
+    ERROR,
+    WARNING,
+    INFO,
+    DEBUG,
+    TRACE
+};
+void log(LOG_LEVEL loglevel, const char * fmt, ...);
 
 enum parameter_type {
     NONE = 0, INPUT, OUTPUT, SOUT, PRODUCE, LIST_VIEW
 };
 
-struct link_info {
+struct io_item {
     int id;
     parameter_type type;
 };
 
-typedef std::map<int, link_info> data_link_info;
-typedef std::vector<link_info> data_link_vec;
+typedef std::map<int, io_item> node_io_map;
+typedef std::vector<io_item> node_io_vec;
 struct io_description {
-    data_link_info item_input;
-    data_link_info item_output;
-    data_link_info query_input;
-    data_link_info query_output;
+    node_io_map item_input;
+    node_io_map item_output;
+    node_io_map query_input;
+    node_io_map query_output;
 };
 template <class D, template <class> class... MS> struct meta_info_list {};
 template <template <class> class... TMPS> struct template_list {};
 template <class... TS> struct type_list {};
+
 std::string demangle(const char* name);
+
+template <class T>
+std::string type(const T& t) {
+    return demangle(typeid(t).name());
+}
 
 template <class T>
 class data_wrapper{
@@ -108,7 +125,7 @@ void push_io(io_description & iodes) {
         return;
     }
 
-    link_info link;
+    io_item link;
     link.id = parameter_traits<A>::id();
     link.type = parameter_traits<A>::ptype;
 
