@@ -1,10 +1,11 @@
+#include <algorithm>
 #include "util.h"
 #include "node_info.h"
 
 
 namespace galois::gparallel {
 
-inline void data_link_map_to_vec(const data_link_info & map, data_link_vec & vec) {
+inline void data_link_map_to_vec(const node_io_map & map, node_io_vec & vec) {
     for (auto && it : map) {
         vec.push_back(it.second);
     }
@@ -22,6 +23,8 @@ node_info::node_info() {
     _query_deps_count = 0;
 }
 
+
+
 void node_info::initialize(
         std::string name, 
         batch_function_type batch_fn, 
@@ -32,13 +35,18 @@ void node_info::initialize(
     _batch_fn = batch_fn;
     _query_fn = query_fn;
     _end_fn = end_fn;
-
     _has_item_input = (io.item_input.size() > 0);
 
-    data_link_map_to_vec(io.item_input, _item_in);
-    data_link_map_to_vec(io.item_output, _item_out);
-    data_link_map_to_vec(io.query_input, _query_in);
-    data_link_map_to_vec(io.query_output, _query_out);
+    auto fn = [](const node_io_map & s, node_io_vec & d) {
+        d.reserve(s.size());
+        for (auto & node : s) {
+            d.push_back(node.second);
+        }
+    };
+    fn(io.item_input, _item_in);
+    fn(io.item_output, _item_out);
+    fn(io.query_input, _query_in);
+    fn(io.query_output, _query_out);
 
     _data_in.insert(_data_in.end(), _item_in.begin(), _item_in.end());
     _data_in.insert(_data_in.end(), _query_in.begin(), _query_in.end());

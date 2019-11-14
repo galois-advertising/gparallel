@@ -27,7 +27,7 @@ public:
     void describe() const;
     const char * graphviz() const;
 
-private:
+//private:
     friend class node;
     friend class node_container;
 
@@ -40,15 +40,15 @@ private:
     int _item_deps_count;
     int _query_deps_count;
     std::string _name;
-    data_link_vec _item_in;
-    data_link_vec _item_out;
+    node_io_vec _item_in;
+    node_io_vec _item_out;
     std::vector<const node_info*> _item_node_in;
     std::vector<const node_info*> _item_node_out;
-    data_link_vec _query_in;
-    data_link_vec _query_out;
+    node_io_vec _query_in;
+    node_io_vec _query_out;
     std::vector<const node_info*> _query_node_in;
     std::vector<const node_info*> _query_node_out;
-    data_link_vec _data_in;
-    data_link_vec _data_out;
+    node_io_vec _data_in;
+    node_io_vec _data_out;
 };
 }

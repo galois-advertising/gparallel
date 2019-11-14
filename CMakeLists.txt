@@ -21,6 +21,21 @@ set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -std=c++2a -fno-str
 set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -std=c++2a -fno-strict-aliasing -Wno-register")
 set(CMAKE_BUILD_TYPE "Release")
 
+find_package(Boost REQUIRED COMPONENTS log)
+if(NOT Boost_FOUND)
+    message("Can not find Boost")
+endif()
+message(STATUS "Found Boost IncPath ${Boost_INCLUDE_DIRS}")
+message(STATUS "Found Boost LibPath ${Boost_LIBRARY_DIRS}")
+message(STATUS "Found Boost LIBRARIES ${Boost_LIBRARIES}")
+
+
+add_definitions(-DBOOST_SPIRIT_THREADSAFE)
+add_definitions(-DBOOST_ALL_DYN_LINK)
+
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+
 include_directories("${PROJECT_SOURCE_DIR}/include")
 include_directories("${PROJECT_SOURCE_DIR}/src")
 include_directories("${PROJECT_SOURCE_DIR}/")
@@ -42,4 +57,4 @@ add_executable(gparallel
 "${PROJECT_SOURCE_DIR}/src/node_container.cpp" 
 "${PROJECT_SOURCE_DIR}/src/node_info.cpp" 
 )
-target_link_libraries(gparallel ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(gparallel ${GTEST_BOTH_LIBRARIES} boost_log-mt)

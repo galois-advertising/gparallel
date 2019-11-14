@@ -10,17 +10,19 @@
 namespace galois::gparallel
 {
 
-
+typedef std::set<type_id_t> type_id_set_t;
 class node_container
 {
 public: 
     bool init();
     template <class NT>
     void register_node_operator();
+    auto begin(){return _nodes.begin();}
+    auto end(){return _nodes.end();}
 private:
     std::vector<std::shared_ptr<node_info>> _nodes;
-    std::vector<std::shared_ptr<node_info>> _end_nodes;
-    std::map<std::string, std::shared_ptr<node_info>> _name_node_map;
+    //std::vector<std::shared_ptr<node_info>> _end_nodes;
+    //std::map<std::string, std::shared_ptr<node_info>> _name_node_map;
 };
 
 template <class ...NTS>
@@ -52,6 +54,8 @@ void node_container::register_node_operator()
     auto new_node = std::make_shared<node_info>();
     _nodes.push_back(new_node);
     io_description vec;
-    deduce_depends<auto_type, NT>::deduce_io(vec);
+    deduce_depends<auto_type, NT>::deduce(vec);
+    //_nodes.back()->initialize(strdup(name.c_str()), batch_fn, query_fn, end_fn, vec);
+    _nodes.back()->initialize(name, nullptr, nullptr, nullptr, vec);
 }
 }

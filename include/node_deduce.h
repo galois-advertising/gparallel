@@ -58,7 +58,7 @@ struct deduce_depends{};
 
 template <class NT>
 struct deduce_depends<auto_type, NT> {
-    static void deduce_io(io_description & vec) {
+    static void deduce(io_description & vec) {
         deduce_fn<NT, decltype(&NT::process)>::deduce(vec);
     }
 };
