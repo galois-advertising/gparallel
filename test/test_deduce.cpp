@@ -19,7 +19,7 @@ DECL_DATA_META(MetaE, base, MetaD) {};
 
 struct NodeA
 {
-    int process(output<MetaA> b) { return 0; }
+    int process(produce<MetaA> b) { return 0; }
 };
 
 struct NodeB

@@ -10,7 +10,10 @@
 namespace galois::gparallel
 {
 
-typedef std::set<type_id_t> type_id_set_t;
+typedef std::set<meta_id_t> meta_id_set_t;
+typedef std::set<node_id_t> node_id_set_t;
+typedef std::map< meta_id_t, std::vector<node_ptr> > meta_to_nodevec_t;
+typedef std::map< meta_id_t, node_ptr > meta_to_node_t;
 class node_container
 {
 public: 
@@ -20,9 +23,12 @@ public:
     auto begin(){return _nodes.begin();}
     auto end(){return _nodes.end();}
 private:
-    std::vector<std::shared_ptr<node_info>> _nodes;
-    //std::vector<std::shared_ptr<node_info>> _end_nodes;
-    //std::map<std::string, std::shared_ptr<node_info>> _name_node_map;
+    void show_meta_depends_graphviz(
+    std::map<meta_id_t, meta_id_set_t> & meta_implies, std::string tag);
+    bool build_meta_depends(std::map<meta_id_t, meta_id_set_t> & meta_implies);
+    std::vector<node_ptr> _nodes;
+    //std::vector<node_ptr> _end_nodes;
+    //std::map<std::string, node_ptr> _name_node_map;
 };
 
 template <class ...NTS>

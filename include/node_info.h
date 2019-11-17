@@ -2,8 +2,11 @@
 #include <memory>
 #include "util.h"
 namespace galois::gparallel {
-
+typedef int node_id_t;
 class node;
+class node_info;
+typedef std::shared_ptr<node_info> node_ptr;
+typedef std::shared_ptr<const node_info> node_cptr;
 class node_info {
 public:
     node_info();
@@ -35,20 +38,24 @@ public:
     batch_function_type _batch_fn;
     query_function_type _query_fn;
     end_function_type _end_fn;
-    int _node_id;
+    node_id_t _node_id;
     int _node_user_id;
     int _item_deps_count;
     int _query_deps_count;
     std::string _name;
-    node_io_vec _item_in;
-    node_io_vec _item_out;
-    std::vector<const node_info*> _item_node_in;
-    std::vector<const node_info*> _item_node_out;
-    node_io_vec _query_in;
-    node_io_vec _query_out;
-    std::vector<const node_info*> _query_node_in;
-    std::vector<const node_info*> _query_node_out;
-    node_io_vec _data_in;
-    node_io_vec _data_out;
+
+    node_io_vec _item_input_meta;
+    node_io_vec _item_output_meta;
+    node_io_vec _query_input_meta;
+    node_io_vec _query_output_meta;
+
+    std::vector<node_ptr> _item_input_node;
+    std::vector<node_ptr> _item_output_node;
+    std::vector<node_ptr> _query_input_node;
+    std::vector<node_ptr> _query_output_node;
+
+    // just for	performance optimizing 
+    node_io_vec _all_input_meta; // = _item_input_meta + _query_input_meta
+    node_io_vec _all_output_meta; // = _item_output_meta + _query_output_meta
 };
 }

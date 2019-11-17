@@ -11,6 +11,18 @@ inline void data_link_map_to_vec(const node_io_map & map, node_io_vec & vec) {
     }
 }
 
+void operator += (node_io_vec & i, const node_io_vec & other)
+{
+    i.insert(i.end(), other.begin(), other.end());
+}
+
+node_io_vec operator + (node_io_vec & a, const node_io_vec & b)
+{
+    node_io_vec res;
+    res += a;
+    res += b;
+    return std::move(res);
+}
 
 node_info::node_info() {
     static int g_node_id = 0;
@@ -37,21 +49,21 @@ void node_info::initialize(
     _end_fn = end_fn;
     _has_item_input = (io.item_input.size() > 0);
 
-    auto fn = [](const node_io_map & s, node_io_vec & d) {
+    auto fill_meta = [](const node_io_map & s, node_io_vec & d) {
         d.reserve(s.size());
         for (auto & node : s) {
             d.push_back(node.second);
         }
     };
-    fn(io.item_input, _item_in);
-    fn(io.item_output, _item_out);
-    fn(io.query_input, _query_in);
-    fn(io.query_output, _query_out);
+    fill_meta(io.item_input, _item_input_meta);
+    fill_meta(io.item_output, _item_output_meta);
+    fill_meta(io.query_input, _query_input_meta);
+    fill_meta(io.query_output, _query_output_meta);
 
-    _data_in.insert(_data_in.end(), _item_in.begin(), _item_in.end());
-    _data_in.insert(_data_in.end(), _query_in.begin(), _query_in.end());
-    _data_out.insert(_data_out.end(), _item_out.begin(), _item_out.end());
-    _data_out.insert(_data_out.end(), _query_out.begin(), _query_out.end());
+    _all_input_meta += _item_input_meta; 
+    _all_input_meta += _query_input_meta;
+    _all_output_meta += _item_output_meta;
+    _all_output_meta += _query_output_meta;
 }
 
 void node_info::set_end(end_function_type end_fn) {
@@ -75,11 +87,11 @@ int node_info::item_deps_count() const {
 }
 
 size_t node_info::item_node_out_size() const {
-    return _item_node_out.size();
+    return _item_output_node.size();
 }
 
 const node_info& node_info::item_node_out(size_t index) const {
-    return *_item_node_out[index];
+    return *_item_output_node[index];
 }
 
 int node_info::query_deps_count() const {
@@ -87,11 +99,11 @@ int node_info::query_deps_count() const {
 }
 
 size_t node_info::query_node_out_size() const {
-    return _query_node_out.size();
+    return _query_output_node.size();
 }
 
 const node_info& node_info::query_node_out(size_t index) const {
-    return *_query_node_out[index];
+    return *_query_output_node[index];
 }
 
 int node_info::node_id() const {

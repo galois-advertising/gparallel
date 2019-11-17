@@ -20,7 +20,7 @@ TEST(Test, invoke_ex) {
     C c;
     D d;
     // any order of a,b,c,d is ok
-    std::cout<<invoke_ex(fn, a, b, c, d)<<std::endl;
-    std::cout<<invoke_ex(fn, d, b, c, a)<<std::endl;
-    std::cout<<invoke_ex(fn, d, c, b, a)<<std::endl;
+    ASSERT_EQ(invoke_ex(fn, a, b, c, d), 1);
+    ASSERT_EQ(invoke_ex(fn, d, b, c, a), 1);
+    ASSERT_EQ(invoke_ex(fn, d, c, b, a), 1);
 }

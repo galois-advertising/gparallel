@@ -7,7 +7,7 @@
 
 namespace galois::gparallel
 {
-typedef int type_id_t;
+typedef int meta_id_t;
 std::string demangle(const char* name);
 // For every tag, the id is global uniqe
 template <class tag>

@@ -44,4 +44,8 @@ TEST(Test, deduce_depends) {
     SHOW(vec.item_output);
     SHOW(vec.query_output);
     SHOW(vec.query_output);
+    ASSERT_EQ(vec.item_input.size(), 3);
+    ASSERT_EQ(vec.item_output.size(), 2);
+    ASSERT_EQ(vec.query_input.size(), 0);
+    ASSERT_EQ(vec.query_output.size(), 0);
 }

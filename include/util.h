@@ -14,6 +14,7 @@ namespace galois::gparallel
 struct none_type {};
 struct auto_type {};
 
+
 std::string demangle(const char* name);
 enum LOG_LEVEL {
     FATAL,
@@ -74,8 +75,6 @@ class input {
 public:
     typedef typename M<none_type>::meta_info meta_info;
     typedef typename M<none_type>::data_meta_type data_meta_type;
-    //typedef meta::deduce_depends<meta_info> input_deduce_type;
-    //input_deduce_type _v;
 };
 
 template <template<class> class M>
@@ -87,6 +86,13 @@ public:
 
     output(meta_imp_type v) : _v(v) {}
     meta_imp_type _v;
+};
+
+template <template<class> class M>
+class produce {
+public:
+    typedef typename M<none_type>::meta_info meta_info;
+    typedef typename M<none_type>::data_meta_type data_meta_type;
 };
 
 template <class M>
@@ -118,6 +124,20 @@ struct parameter_traits< output<M> > {
         return node_meta_id::instance().name();
     }
 };
+
+template <template <class> class M>
+struct parameter_traits< produce<M> > {
+    typedef type_id<typename M<none_type>::meta_info, none_type> node_meta_id;
+    typedef typename M<none_type>::meta_info meta_info;
+    static const parameter_type ptype = PRODUCE;
+    static int id() {
+        return node_meta_id::instance().id();
+    }
+    static const char* name() {
+        return node_meta_id::instance().name();
+    }
+};
+
 template <class A, class NT>
 void push_io(io_description & iodes) {
     if (parameter_traits<A>::ptype == NONE) {
