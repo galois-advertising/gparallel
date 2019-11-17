@@ -2,6 +2,8 @@
 #include <memory>
 #include "util.h"
 namespace galois::gparallel {
+#define ITEM (0)
+#define QUERY (1)
 typedef int node_id_t;
 class node;
 class node_info;
@@ -40,22 +42,17 @@ public:
     end_function_type _end_fn;
     node_id_t _node_id;
     int _node_user_id;
-    int _item_deps_count;
-    int _query_deps_count;
+    int _deps_count[2];
     std::string _name;
 
-    node_io_vec _item_input_meta;
-    node_io_vec _item_output_meta;
-    node_io_vec _query_input_meta;
-    node_io_vec _query_output_meta;
+    node_io_vec _input_metas[2];
+    node_io_vec _output_metas[2];
 
-    std::vector<node_ptr> _item_input_node;
-    std::vector<node_ptr> _item_output_node;
-    std::vector<node_ptr> _query_input_node;
-    std::vector<node_ptr> _query_output_node;
+    std::vector<node_ptr> _input_nodes[2];
+    std::vector<node_ptr> _output_nodes[2];
 
     // just for	performance optimizing 
-    node_io_vec _all_input_meta; // = _item_input_meta + _query_input_meta
-    node_io_vec _all_output_meta; // = _item_output_meta + _query_output_meta
+    node_io_vec _all_input_meta; // = _input_metas[ITEM] + _input_metas[QUERY]
+    node_io_vec _all_output_meta; // = _output_metas[ITEM] + _output_metas[QUERY]
 };
 }

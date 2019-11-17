@@ -31,8 +31,8 @@ node_info::node_info() {
     _query_fn = nullptr;
     _end_fn = nullptr;
     _node_user_id = 0;
-    _item_deps_count = 0;
-    _query_deps_count = 0;
+    _deps_count[ITEM] = 0;
+    _deps_count[QUERY] = 0;
 }
 
 
@@ -55,15 +55,15 @@ void node_info::initialize(
             d.push_back(node.second);
         }
     };
-    fill_meta(io.item_input, _item_input_meta);
-    fill_meta(io.item_output, _item_output_meta);
-    fill_meta(io.query_input, _query_input_meta);
-    fill_meta(io.query_output, _query_output_meta);
+    fill_meta(io.item_input, _input_metas[ITEM]);
+    fill_meta(io.item_output, _output_metas[ITEM]);
+    fill_meta(io.query_input, _input_metas[QUERY]);
+    fill_meta(io.query_output, _output_metas[QUERY]);
 
-    _all_input_meta += _item_input_meta; 
-    _all_input_meta += _query_input_meta;
-    _all_output_meta += _item_output_meta;
-    _all_output_meta += _query_output_meta;
+    _all_input_meta += _input_metas[ITEM]; 
+    _all_input_meta += _input_metas[QUERY];
+    _all_output_meta += _output_metas[ITEM];
+    _all_output_meta += _output_metas[QUERY];
 }
 
 void node_info::set_end(end_function_type end_fn) {
@@ -83,27 +83,27 @@ std::string node_info::name() const {
 }
 
 int node_info::item_deps_count() const {
-    return _item_deps_count;
+    return _deps_count[ITEM];
 }
 
 size_t node_info::item_node_out_size() const {
-    return _item_output_node.size();
+    return _output_nodes[ITEM].size();
 }
 
 const node_info& node_info::item_node_out(size_t index) const {
-    return *_item_output_node[index];
+    return *_output_nodes[ITEM][index];
 }
 
 int node_info::query_deps_count() const {
-    return _query_deps_count;
+    return _deps_count[QUERY];
 }
 
 size_t node_info::query_node_out_size() const {
-    return _query_output_node.size();
+    return _output_nodes[QUERY].size();
 }
 
 const node_info& node_info::query_node_out(size_t index) const {
-    return *_query_output_node[index];
+    return *_output_nodes[QUERY][index];
 }
 
 int node_info::node_id() const {

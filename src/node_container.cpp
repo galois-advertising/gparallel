@@ -136,7 +136,7 @@ bool node_container::init()
 {
     // check nodes
     if (auto pos = std::find_if(_nodes.begin(), _nodes.end(), [](auto ptr){
-       return ptr->_query_output_meta.size() > 0 && ptr->_item_output_meta.size() > 0;
+       return ptr->_output_metas[QUERY].size() > 0 && ptr->_output_metas[ITEM].size() > 0;
     }); pos != _nodes.end()) {
         //log(FATAL, "can not process both query and item:%s", (*pos)->name().c_str());
         return false;
@@ -197,54 +197,72 @@ bool node_container::init()
                 }
             }
         }
-        // item
-        for (auto & input_meta : node->_item_input_meta) {
-            // for each input meta of each node
-            if (metas_direct_deps.find(input_meta.id) == metas_direct_deps.end()) {
-                // if this node direct depends this meta, then continue
-                continue;
-            }
-
-            auto upstream_node = output2node[input_meta.id];
-            if (upstream_node.get() == PRODUCE_MARK) {
-                const auto & ups_nodes = produce2nodevec[input_meta.id];
-                if (ups_nodes.empty()) {
-                    return -1;
-                }
-
-                for (auto ups_node : ups_nodes) {
-                    if (node_in_vec(ups_node, node->_item_input_node)) {
-                        continue;
-                    }
-                    node->_item_input_node.push_back(ups_node);
-                    ups_node->_item_output_node.push_back(node);
-                }
-                node->_item_deps_count += 1;
-            } else if (upstream_node.get() == SOUT_MARK) {
-                const auto & ups_nodes = sout2nodevec[input_meta.id];
-                if (ups_nodes.empty()) {
-                    return -1;
-                }
-                for (auto ups_node : ups_nodes) {
-                    if (node_in_vec(ups_node, node->_item_input_node)) {
-                        continue;
-                    }
-                    node->_item_input_node.push_back(ups_node);
-                    node->_item_deps_count += 1;
-                    ups_node->_item_output_node.push_back(node);
-                }
-            } else if (upstream_node != nullptr) {
-                if (node_in_vec(upstream_node, node->_item_input_node)) {
-                    // if this node already in node->_item_input_node
+        auto connect_node_by_meta = [&](int index) {
+            for (auto & input_meta : node->_input_metas[index]) {
+                // for each input meta of each node
+                if (metas_direct_deps.find(input_meta.id) == metas_direct_deps.end()) {
+                    // if this node direct depends this meta, then continue
                     continue;
                 }
-                node->_item_input_node.push_back(upstream_node);
-                node->_item_deps_count += 1;
-                upstream_node->_item_output_node.push_back(node);
-            } else {
-                return -1;
+
+                auto upstream_node = output2node[input_meta.id];
+                if (upstream_node.get() == PRODUCE_MARK) {
+                    const auto & ups_nodes = produce2nodevec[input_meta.id];
+                    if (ups_nodes.empty()) {
+                        return false;
+                    }
+
+                    for (auto ups_node : ups_nodes) {
+                        if (node_in_vec(ups_node, node->_input_nodes[index])) {
+                            continue;
+                        }
+                        node->_input_nodes[index].push_back(ups_node);
+                        ups_node->_output_nodes[index].push_back(node);
+                    }
+                    node->_deps_count[index] += 1;
+                } else if (upstream_node.get() == SOUT_MARK) {
+                    const auto & ups_nodes = sout2nodevec[input_meta.id];
+                    if (ups_nodes.empty()) {
+                        return false;
+                    }
+                    for (auto ups_node : ups_nodes) {
+                        if (node_in_vec(ups_node, node->_input_nodes[index])) {
+                            continue;
+                        }
+                        node->_input_nodes[index].push_back(ups_node);
+                        node->_deps_count[index] += 1;
+                        ups_node->_output_nodes[index].push_back(node);
+                    }
+                } else if (upstream_node != nullptr) {
+                    if (node_in_vec(upstream_node, node->_input_nodes[index])) {
+                        // if this node already in node->_input_nodes[ITEM]
+                        continue;
+                    }
+                    node->_input_nodes[index].push_back(upstream_node);
+                    node->_deps_count[index] += 1;
+                    upstream_node->_output_nodes[index].push_back(node);
+                } else {
+                    return false;
+                }
             }
+            return true;
+        };
+        connect_node_by_meta(ITEM);
+        connect_node_by_meta(QUERY);
+    }
+
+    for (auto node : _nodes) {
+        std::cout<<node->name()<<std::endl;
+        std::cout<<"\tinput: ";
+        for (auto input_node : node->_input_nodes[ITEM]) {
+            std::cout<<input_node->name()<<", ";
         }
+        std::cout<<std::endl;
+        std::cout<<"\toutput: ";
+        for (auto output_node : node->_output_nodes[ITEM]) {
+            std::cout<<output_node->name()<<", ";
+        }
+        std::cout<<std::endl;
     }
 }  
 
