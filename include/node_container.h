@@ -25,6 +25,7 @@ public:
 private:
     void show_meta_depends_graphviz(
     std::map<meta_id_t, meta_id_set_t> & meta_implies, std::string tag);
+    void show_node_depends_graphviz(std::string tag);
     bool build_meta_depends(std::map<meta_id_t, meta_id_set_t> & meta_implies);
     std::vector<node_ptr> _nodes;
     //std::vector<node_ptr> _end_nodes;

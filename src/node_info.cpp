@@ -66,15 +66,19 @@ void node_info::initialize(
     _all_output_meta += _output_metas[QUERY];
 }
 
+void node_info::graphviz(std::stringstream & out) const {
+    for (auto i : {ITEM, QUERY}) {
+        for (auto node : _input_nodes[i]) {
+            out<<"\""<<name()<<"\" -> \""<<node->name()<<"\";"<<std::endl;
+        }
+    }
+}
+
 void node_info::set_end(end_function_type end_fn) {
     _end_fn = end_fn;
 }
 
 void node_info::describe() const {
-
-}
-
-const char* node_info::graphviz() const {
 
 }
 

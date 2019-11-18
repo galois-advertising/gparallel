@@ -74,6 +74,23 @@ void node_container::show_meta_depends_graphviz(
     BOOST_LOG_TRIVIAL(warning) <<tag<<std::endl<<"http://graphviz.it/#" <<std::endl<<std::regex_replace(log, re, "");
 
 }
+
+void node_container::show_node_depends_graphviz(std::string tag)
+{
+    std::stringstream node_depends_log;
+    node_depends_log<<"\ndigraph "<<tag<<"{\n";
+    node_depends_log<<"rankdir=BT;\n";
+    node_depends_log<<"size=\"8,5\";\n";
+    for (auto node : _nodes) {
+        node->graphviz(node_depends_log);
+    }
+    node_depends_log<<"}";
+    auto log = node_depends_log.str();
+    std::regex re("galois::gparallel::none_type, |galois::gparallel::meta_info_list");
+    BOOST_LOG_TRIVIAL(warning) <<tag<<std::endl<<"http://graphviz.it/#" <<std::endl<<std::regex_replace(log, re, "");
+
+}
+
 bool node_container::build_meta_depends(std::map<meta_id_t, meta_id_set_t> & meta_implies)
 {
     // find all input<> for each output<> which depends them within this each node
@@ -250,20 +267,7 @@ bool node_container::init()
         connect_node_by_meta(ITEM);
         connect_node_by_meta(QUERY);
     }
-
-    for (auto node : _nodes) {
-        std::cout<<node->name()<<std::endl;
-        std::cout<<"\tinput: ";
-        for (auto input_node : node->_input_nodes[ITEM]) {
-            std::cout<<input_node->name()<<", ";
-        }
-        std::cout<<std::endl;
-        std::cout<<"\toutput: ";
-        for (auto output_node : node->_output_nodes[ITEM]) {
-            std::cout<<output_node->name()<<", ";
-        }
-        std::cout<<std::endl;
-    }
+    show_node_depends_graphviz("node_depends");
 }  
 
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include "util.h"
+#include <sstream>
 namespace galois::gparallel {
 #define ITEM (0)
 #define QUERY (1)
@@ -30,7 +31,7 @@ public:
     const node_info & query_node_out(size_t index) const;
     int node_id() const;
     void describe() const;
-    const char * graphviz() const;
+    void graphviz(std::stringstream&) const;
 
 //private:
     friend class node;
