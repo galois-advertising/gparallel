@@ -59,11 +59,6 @@ void node_info::initialize(
     fill_meta(io.item_output, _output_metas[ITEM]);
     fill_meta(io.query_input, _input_metas[QUERY]);
     fill_meta(io.query_output, _output_metas[QUERY]);
-
-    _all_input_meta += _input_metas[ITEM]; 
-    _all_input_meta += _input_metas[QUERY];
-    _all_output_meta += _output_metas[ITEM];
-    _all_output_meta += _output_metas[QUERY];
 }
 
 void node_info::graphviz(std::stringstream & out) const {

@@ -102,13 +102,13 @@ bool node_container::build_meta_depends(std::map<meta_id_t, meta_id_set_t> & met
     //     out<4> -> {input<1:11> input<11> input<2>}
     //     out<5> -> {input<3> input<4:44> input<44>}
     //     out<6> -> {input<3> input<4:44> input<44>}
-    //std::map<meta_id_t, meta_id_set_t> meta_implies;
     for (auto node : _nodes) {
-        for (auto out : node->_all_output_meta) {
-            std::set<meta_id_t> tmp;
-            std::transform(node->_all_input_meta.begin(), node->_all_input_meta.end(),
-                std::inserter(meta_implies[out.id], meta_implies[out.id].end()),
-                [](auto & node){ return node.id; });
+        for (auto i : {ITEM, QUERY}) {
+            for (auto out : node->_output_metas[i]) {
+                std::transform(node->_input_metas[i].begin(), node->_input_metas[i].end(),
+                    std::inserter(meta_implies[out.id], meta_implies[out.id].end()),
+                    [](auto & node){ return node.id; });
+            }
         }
     }
     show_meta_depends_graphviz(meta_implies, "original_meta_implies");
@@ -162,33 +162,35 @@ bool node_container::init()
     meta_to_nodevec_t sout2nodevec;
     meta_to_node_t output2node;
     for (auto node : _nodes) {
-        for (auto & meta: node->_all_output_meta) {
-            // for each output meta of each node
-            switch (meta.type) {
-            case OUTPUT:
-                if (output2node.count(meta.id) != 0) {
-                    log(FATAL, "%s output fail: node[%s] already output meta[%s]",
-                        node->name().c_str(), output2node[meta.id]->name().c_str(), 
-                        typeid_manager<none_type>::instance().name(meta.id).c_str());
-                    return false;
+        for (auto i : {ITEM, QUERY}) {
+            for (auto & meta: node->_output_metas[i]) {
+                // for each output meta of each node
+                switch (meta.type) {
+                case OUTPUT:
+                    if (output2node.count(meta.id) != 0) {
+                        log(FATAL, "%s output fail: node[%s] already output meta[%s]",
+                            node->name().c_str(), output2node[meta.id]->name().c_str(), 
+                            typeid_manager<none_type>::instance().name(meta.id).c_str());
+                        return false;
+                    }
+                    output2node[meta.id] = node;
+                    break;
+                case SOUT:
+                    output2node[meta.id] = 
+                        node_ptr(reinterpret_cast<node_info*>(SOUT_MARK), [](auto){});
+                    sout2nodevec[meta.id].push_back(node);
+                    break;
+                case PRODUCE:
+                    output2node[meta.id] = 
+                        node_ptr(reinterpret_cast<node_info*>(PRODUCE_MARK), [](auto){});
+                    produce2nodevec[meta.id].push_back(node);
+                    break;
+                case INPUT:
+                case NONE:
+                default:
+                    log(FATAL, "should not be here");
+                    break;
                 }
-                output2node[meta.id] = node;
-                break;
-            case SOUT:
-                output2node[meta.id] = 
-                    node_ptr(reinterpret_cast<node_info*>(SOUT_MARK), [](auto){});
-                sout2nodevec[meta.id].push_back(node);
-                break;
-            case PRODUCE:
-                output2node[meta.id] = 
-                    node_ptr(reinterpret_cast<node_info*>(PRODUCE_MARK), [](auto){});
-                produce2nodevec[meta.id].push_back(node);
-                break;
-            case INPUT:
-            case NONE:
-            default:
-                log(FATAL, "should not be here");
-                break;
             }
         }
     }
@@ -201,7 +203,9 @@ bool node_container::init()
     for (auto node: _nodes) {
         meta_id_set_t metas_direct_deps;
         {
-            metas_direct_deps += node->_all_input_meta;
+            for (auto i : {ITEM, QUERY}) {
+                metas_direct_deps += node->_input_metas[i];
+            }
             bool has_reduced = true;
             while (has_reduced) {
                 has_reduced = false;

@@ -52,7 +52,6 @@ add_executable(gparallel
 "${PROJECT_SOURCE_DIR}/test/test_data_meta.cpp" 
 "${PROJECT_SOURCE_DIR}/test/test_type_id.cpp" 
 "${PROJECT_SOURCE_DIR}/test/test_node.cpp" 
-"${PROJECT_SOURCE_DIR}/test/test_deduce.cpp" 
 "${PROJECT_SOURCE_DIR}/test/test_register_node.cpp" 
 "${PROJECT_SOURCE_DIR}/src/node_container.cpp" 
 "${PROJECT_SOURCE_DIR}/src/node_info.cpp" 

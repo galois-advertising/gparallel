@@ -51,9 +51,5 @@ public:
 
     std::vector<node_ptr> _input_nodes[2];
     std::vector<node_ptr> _output_nodes[2];
-
-    // just for	performance optimizing 
-    node_io_vec _all_input_meta; // = _input_metas[ITEM] + _input_metas[QUERY]
-    node_io_vec _all_output_meta; // = _output_metas[ITEM] + _output_metas[QUERY]
 };
 }
