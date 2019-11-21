@@ -13,15 +13,15 @@
 namespace galois::gparallel
 {
 
-void operator += (meta_id_set_t & i, const meta_id_set_t & other)
+void operator += (id_set_t & i, const id_set_t & other)
 {
     std::transform(other.cbegin(), other.cend(),std::inserter(i, i.end()), 
         [](auto o){return o;});
 }
 
-bool operator -= (meta_id_set_t & i, const meta_id_set_t & other)
+bool operator -= (id_set_t & i, const id_set_t & other)
 {
-    meta_id_set_t diff; 
+    id_set_t diff; 
     if (i.size() < other.size()) {
         for (auto id : i) {
             if (other.find(id) != other.end()) {
@@ -43,7 +43,7 @@ bool operator -= (meta_id_set_t & i, const meta_id_set_t & other)
     
 }
 
-void operator += (meta_id_set_t & i, const node_io_vec & other)
+void operator += (id_set_t & i, const node_io_vec & other)
 {
     std::transform(other.cbegin(), other.cend(),std::inserter(i, i.end()), 
         [](auto o){return o.id;});
@@ -54,7 +54,7 @@ static node_info * const SOUT_MARK = reinterpret_cast<node_info*>(0x2);
 
 
 void node_container::show_meta_depends_graphviz(
-    std::map<meta_id_t, meta_id_set_t> & meta_implies,
+    id_implies_t & meta_implies,
     std::string tag)
 {
     std::stringstream meta_depends_log;
@@ -91,7 +91,47 @@ void node_container::show_node_depends_graphviz(std::string tag)
 
 }
 
-bool node_container::build_meta_depends(std::map<meta_id_t, meta_id_set_t> & meta_implies)
+
+bool node_container::graphviz(id_implies_t & target, std::stringstream & ss, std::string tag)
+{
+    ss<<"digraph "<<tag<<"{"<<std::endl;
+    ss<<"rankdir=BT;"<<std::endl;
+    ss<<"size=\"8,5\";"<<std::endl;
+    for (auto & [output, input_set] : target) {
+        for (auto input : input_set) {
+                ss<<"\""<<output<<"\" -> \""<<input<<"\""<<";"<<std::endl;
+        }
+    }
+    ss<<"}";
+    return true;
+}
+
+bool node_container::make_full_connection(id_implies_t & implies)
+{
+    bool has_change = true;
+    while (has_change) {
+        has_change = false;
+        // for every output
+        for (auto & [output, input_set] : implies) {
+            id_set_t sub;
+            // See every input<> as output<> of other nodes,
+            // and we find the input<> or 'other nodes',
+            // these input<> were also 
+            for (auto input_id : input_set) {
+                sub += implies[input_id];
+            }
+            size_t prev_size = input_set.size();
+            input_set += sub;
+            if (input_set.size() > prev_size) {
+                has_change = true;
+            }
+        }
+    }
+    return true;
+
+}
+
+bool node_container::build_meta_depends(id_implies_t & meta_implies)
 {
     // find all input<> for each output<> which depends them within this each node
     // for example: 
@@ -120,27 +160,12 @@ bool node_container::build_meta_depends(std::map<meta_id_t, meta_id_set_t> & met
     //     out<4> -> {input<1:11> input<11> input<2>}
     //     out<5> -> {input<3> input<4:44> input<44> input<1:11> input<11> input<2>}
     //     out<6> -> {input<3> input<4:44> input<44> input<1:11> input<11> input<2>}
-    bool has_change = true;
-    while (has_change) {
-        has_change = false;
-        // for every output
-        for (auto & [output, input_set] : meta_implies) {
-            //std::set<int> & s = it->second;
-            meta_id_set_t sub;
-            // See every input<> as output<> of other nodes,
-            // and we find the input<> or 'other nodes',
-            // these input<> were also 
-            for (auto input_id : input_set) {
-                sub += meta_implies[input_id];
-            }
-            size_t prev_size = input_set.size();
-            input_set += sub;
-            if (input_set.size() > prev_size) {
-                has_change = true;
-            }
-        }
-    }
-    show_meta_depends_graphviz(meta_implies, "full_meta_implies");
+    if (make_full_connection(meta_implies)) {
+        show_meta_depends_graphviz(meta_implies, "full_meta_implies");
+    } else {
+        BOOST_LOG_TRIVIAL(warning) << "meta: make_full_connection fail.";
+        return false;
+    } 
     return true;
 }
 
@@ -196,12 +221,12 @@ bool node_container::init()
     }
 
 
-    std::map<meta_id_t, meta_id_set_t> meta_implies;
+    id_implies_t meta_implies;
     build_meta_depends(meta_implies);
 
 
     for (auto node: _nodes) {
-        meta_id_set_t metas_direct_deps;
+        id_set_t metas_direct_deps;
         {
             for (auto i : {ITEM, QUERY}) {
                 metas_direct_deps += node->_input_metas[i];
@@ -209,7 +234,7 @@ bool node_container::init()
             bool has_reduced = true;
             while (has_reduced) {
                 has_reduced = false;
-                meta_id_set_t tmp = metas_direct_deps;
+                id_set_t tmp = metas_direct_deps;
                 for (auto id : tmp) {
                     if (metas_direct_deps -= meta_implies[id]) {
                         has_reduced = true;
@@ -272,6 +297,54 @@ bool node_container::init()
         connect_node_by_meta(QUERY);
     }
     show_node_depends_graphviz("node_depends");
+    // reduce node deps
+    id_implies_t node_implies;
+    for (auto node : _nodes) {
+        for (auto i : {ITEM, QUERY}) {
+            for (const auto & node_out : node->_output_nodes[i]) {
+                node_implies[node_out->node_id()].insert(node->node_id());
+            }
+        }
+    }
+    if (!make_full_connection(node_implies)) {
+        BOOST_LOG_TRIVIAL(warning) << "node: make_full_connection fail.";
+        return false;
+    }
+    for (auto node : _nodes) {
+        auto nodes_direct_deps = node_implies[node->node_id()];
+        {
+            bool has_reduced = true;
+            while (has_reduced) {
+                has_reduced = false;
+                auto tmp = nodes_direct_deps;
+                for (const auto& node_in : tmp) {
+                    if (nodes_direct_deps -= node_implies[node_in]) {
+                        has_reduced = true;
+                        break;
+                    }
+                }
+            }
+        }
+        //for (auto i : {ITEM, QUERY}) {
+        //    auto input_node_itr = node->_input_nodes[i].begin();
+        //    while (input_node_itr != node->_input_nodes[i].end()) {
+        //        if (nodes_direct_deps.count((*input_node_itr)->node_id())) {
+        //            continue;
+        //        }
+        //        auto & output_nodes = (*input_node_itr)->_output_nodes[i];
+        //        auto it = std::find(output_nodes.begin(), output_nodes.end(), node);
+        //        if (it == output_nodes.end()) {
+        //            return false;
+        //        } else {
+        //            output_nodes.erase(it);
+        //        }
+        //        output_nodes.erase(*input_node_itr);
+        //        node->_deps_count[i] -= 1;
+        //        node->_input_nodes[i].erase(input_node_itr);
+        //    }
+        //}
+
+    }
 }  
 
 }

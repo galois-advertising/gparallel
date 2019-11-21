@@ -5,7 +5,7 @@
 namespace galois::gparallel {
 #define ITEM (0)
 #define QUERY (1)
-typedef int node_id_t;
+typedef int id_t;
 class node;
 class node_info;
 typedef std::shared_ptr<node_info> node_ptr;
@@ -41,7 +41,7 @@ public:
     batch_function_type _batch_fn;
     query_function_type _query_fn;
     end_function_type _end_fn;
-    node_id_t _node_id;
+    id_t _node_id;
     int _node_user_id;
     int _deps_count[2];
     std::string _name;

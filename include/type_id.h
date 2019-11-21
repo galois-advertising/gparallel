@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <set>
 #include <vector>
 #include <string>
 #include <memory>
@@ -7,7 +8,9 @@
 
 namespace galois::gparallel
 {
-typedef int meta_id_t;
+typedef int id_t;
+typedef std::set<id_t> id_set_t;
+typedef std::map<id_t, id_set_t> id_implies_t;
 std::string demangle(const char* name);
 // For every tag, the id is global uniqe
 template <class tag>
