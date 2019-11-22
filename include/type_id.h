@@ -10,7 +10,7 @@ namespace galois::gparallel
 {
 typedef int id_t;
 typedef std::set<id_t> id_set_t;
-typedef std::map<id_t, id_set_t> id_implies_t;
+typedef std::map<id_t, id_set_t> topology_t;
 std::string demangle(const char* name);
 // For every tag, the id is global uniqe
 template <class tag>

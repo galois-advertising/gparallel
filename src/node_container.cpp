@@ -54,14 +54,14 @@ static node_info * const SOUT_MARK = reinterpret_cast<node_info*>(0x2);
 
 
 void node_container::show_meta_depends_graphviz(
-    id_implies_t & meta_implies,
+    topology_t & meta_transitive_closure,
     std::string tag)
 {
     std::stringstream meta_depends_log;
     meta_depends_log<<"\ndigraph "<<tag<<"{\n";
     meta_depends_log<<"rankdir=BT;\n";
     meta_depends_log<<"size=\"8,5\";\n";
-    for (auto & p : meta_implies) {
+    for (auto & p : meta_transitive_closure) {
         std::cout<<typeid_manager<none_type>::instance().name(p.first)<<std::endl;;
         for (auto id : p.second) {
                 meta_depends_log<<"\""<<typeid_manager<none_type>::instance().name(p.first)
@@ -92,7 +92,7 @@ void node_container::show_node_depends_graphviz(std::string tag)
 }
 
 
-bool node_container::graphviz(id_implies_t & target, std::stringstream & ss, std::string tag)
+bool node_container::graphviz(topology_t & target, std::stringstream & ss, std::string tag)
 {
     ss<<"digraph "<<tag<<"{"<<std::endl;
     ss<<"rankdir=BT;"<<std::endl;
@@ -106,7 +106,7 @@ bool node_container::graphviz(id_implies_t & target, std::stringstream & ss, std
     return true;
 }
 
-bool node_container::make_full_connection(id_implies_t & implies)
+bool node_container::transitive_closure(topology_t & implies)
 {
     bool has_change = true;
     while (has_change) {
@@ -131,52 +131,36 @@ bool node_container::make_full_connection(id_implies_t & implies)
 
 }
 
-bool node_container::build_meta_depends(id_implies_t & meta_implies)
-{
-    // find all input<> for each output<> which depends them within this each node
-    // for example: 
-    //     nodeA: input<1:11> input<2> | out<3> out<4>
-    //     nodeA: input<3> input<4:44> | out<5> out<6>
-    // result is : 
-    //     out<3> -> {input<1:11> input<11> input<2>}
-    //     out<4> -> {input<1:11> input<11> input<2>}
-    //     out<5> -> {input<3> input<4:44> input<44>}
-    //     out<6> -> {input<3> input<4:44> input<44>}
+bool node_container::build_meta_topology(topology_t & me) {
     for (auto node : _nodes) {
         for (auto i : {ITEM, QUERY}) {
             for (auto out : node->_output_metas[i]) {
                 std::transform(node->_input_metas[i].begin(), node->_input_metas[i].end(),
-                    std::inserter(meta_implies[out.id], meta_implies[out.id].end()),
+                    std::inserter(me[out.id], me[out.id].end()),
                     [](auto & node){ return node.id; });
             }
         }
     }
-    show_meta_depends_graphviz(meta_implies, "original_meta_implies");
-
-    // find all input<> in other node
-    // for example: 
-    // result is : 
-    //     out<3> -> {input<1:11> input<11> input<2>}
-    //     out<4> -> {input<1:11> input<11> input<2>}
-    //     out<5> -> {input<3> input<4:44> input<44> input<1:11> input<11> input<2>}
-    //     out<6> -> {input<3> input<4:44> input<44> input<1:11> input<11> input<2>}
-    if (make_full_connection(meta_implies)) {
-        show_meta_depends_graphviz(meta_implies, "full_meta_implies");
-    } else {
-        BOOST_LOG_TRIVIAL(warning) << "meta: make_full_connection fail.";
-        return false;
-    } 
     return true;
 }
 
+bool node_container::build_node_topology(topology_t & me) {
+    for (auto node : _nodes) {
+        for (auto i : {ITEM, QUERY}) {
+            for (const auto & node_out : node->_output_nodes[i]) {
+                me[node_out->node_id()].insert(node->node_id());
+            }
+        }
+    }
+    return true;
+}
 
-bool node_in_vec(node_ptr node, std::vector<node_ptr> & vec) {
+bool if_node_in(node_ptr node, std::set<node_ptr> & vec) {
     return std::find(vec.begin(), vec.end(), node) != vec.end();
 }
 
 bool node_container::init()
 {
-    // check nodes
     if (auto pos = std::find_if(_nodes.begin(), _nodes.end(), [](auto ptr){
        return ptr->_output_metas[QUERY].size() > 0 && ptr->_output_metas[ITEM].size() > 0;
     }); pos != _nodes.end()) {
@@ -221,11 +205,17 @@ bool node_container::init()
     }
 
 
-    id_implies_t meta_implies;
-    build_meta_depends(meta_implies);
+    topology_t meta_transitive_closure;
+    if (build_meta_topology(meta_transitive_closure)) {
+        if (transitive_closure(meta_transitive_closure)) {
+            show_meta_depends_graphviz(meta_transitive_closure, "meta_transitive_closure");
+        } else {
+            return false;
+        } 
+        return false;
+    }
 
-
-    for (auto node: _nodes) {
+    for (auto node : _nodes) {
         id_set_t metas_direct_deps;
         {
             for (auto i : {ITEM, QUERY}) {
@@ -236,18 +226,17 @@ bool node_container::init()
                 has_reduced = false;
                 id_set_t tmp = metas_direct_deps;
                 for (auto id : tmp) {
-                    if (metas_direct_deps -= meta_implies[id]) {
+                    if (metas_direct_deps -= meta_transitive_closure[id]) {
                         has_reduced = true;
                         break;
                     } 
                 }
             }
         }
-        auto connect_node_by_meta = [&](int index) {
+        auto link_node_by_meta = [&](int index) {
             for (auto & input_meta : node->_input_metas[index]) {
-                // for each input meta of each node
                 if (metas_direct_deps.find(input_meta.id) == metas_direct_deps.end()) {
-                    // if this node direct depends this meta, then continue
+                    // Only care about of the metas that direct depends.
                     continue;
                 }
 
@@ -259,11 +248,8 @@ bool node_container::init()
                     }
 
                     for (auto ups_node : ups_nodes) {
-                        if (node_in_vec(ups_node, node->_input_nodes[index])) {
-                            continue;
-                        }
-                        node->_input_nodes[index].push_back(ups_node);
-                        ups_node->_output_nodes[index].push_back(node);
+                        node->_input_nodes[index].insert(ups_node);
+                        ups_node->_output_nodes[index].insert(node);
                     }
                     node->_deps_count[index] += 1;
                 } else if (upstream_node.get() == SOUT_MARK) {
@@ -272,42 +258,32 @@ bool node_container::init()
                         return false;
                     }
                     for (auto ups_node : ups_nodes) {
-                        if (node_in_vec(ups_node, node->_input_nodes[index])) {
+                        if (if_node_in(ups_node, node->_input_nodes[index])) {
                             continue;
                         }
-                        node->_input_nodes[index].push_back(ups_node);
+                        node->_input_nodes[index].insert(ups_node);
                         node->_deps_count[index] += 1;
-                        ups_node->_output_nodes[index].push_back(node);
+                        ups_node->_output_nodes[index].insert(node);
                     }
                 } else if (upstream_node != nullptr) {
-                    if (node_in_vec(upstream_node, node->_input_nodes[index])) {
-                        // if this node already in node->_input_nodes[ITEM]
-                        continue;
-                    }
-                    node->_input_nodes[index].push_back(upstream_node);
+                    node->_input_nodes[index].insert(upstream_node);
+                    upstream_node->_output_nodes[index].insert(node);
                     node->_deps_count[index] += 1;
-                    upstream_node->_output_nodes[index].push_back(node);
                 } else {
                     return false;
                 }
             }
             return true;
         };
-        connect_node_by_meta(ITEM);
-        connect_node_by_meta(QUERY);
-    }
-    show_node_depends_graphviz("node_depends");
-    // reduce node deps
-    id_implies_t node_implies;
-    for (auto node : _nodes) {
         for (auto i : {ITEM, QUERY}) {
-            for (const auto & node_out : node->_output_nodes[i]) {
-                node_implies[node_out->node_id()].insert(node->node_id());
-            }
+            link_node_by_meta(i);
         }
     }
-    if (!make_full_connection(node_implies)) {
-        BOOST_LOG_TRIVIAL(warning) << "node: make_full_connection fail.";
+    show_node_depends_graphviz("node_depends");
+    topology_t node_implies;
+    build_node_topology(node_implies);
+    if (!transitive_closure(node_implies)) {
+        BOOST_LOG_TRIVIAL(warning) << "node: transitive_closure fail.";
         return false;
     }
     for (auto node : _nodes) {
@@ -325,25 +301,20 @@ bool node_container::init()
                 }
             }
         }
-        //for (auto i : {ITEM, QUERY}) {
-        //    auto input_node_itr = node->_input_nodes[i].begin();
-        //    while (input_node_itr != node->_input_nodes[i].end()) {
-        //        if (nodes_direct_deps.count((*input_node_itr)->node_id())) {
-        //            continue;
-        //        }
-        //        auto & output_nodes = (*input_node_itr)->_output_nodes[i];
-        //        auto it = std::find(output_nodes.begin(), output_nodes.end(), node);
-        //        if (it == output_nodes.end()) {
-        //            return false;
-        //        } else {
-        //            output_nodes.erase(it);
-        //        }
-        //        output_nodes.erase(*input_node_itr);
-        //        node->_deps_count[i] -= 1;
-        //        node->_input_nodes[i].erase(input_node_itr);
-        //    }
-        //}
-
+        for (auto i : {ITEM, QUERY}) {
+            for (auto input_node_itr = node->_input_nodes[i].begin(); 
+                input_node_itr != node->_input_nodes[i].end(); ++input_node_itr) {
+                if (nodes_direct_deps.count((*input_node_itr)->node_id())) {
+                    continue;
+                }
+                if ((*input_node_itr)->_output_nodes[i].erase(node) < 1) {
+                    return false;
+                }
+                node->_input_nodes[i].erase(input_node_itr);
+                (*input_node_itr)->_output_nodes[i].erase(*input_node_itr);
+                node->_deps_count[i] -= 1;
+            }
+        }
     }
 }  
 

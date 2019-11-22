@@ -89,20 +89,12 @@ size_t node_info::item_node_out_size() const {
     return _output_nodes[ITEM].size();
 }
 
-const node_info& node_info::item_node_out(size_t index) const {
-    return *_output_nodes[ITEM][index];
-}
-
 int node_info::query_deps_count() const {
     return _deps_count[QUERY];
 }
 
 size_t node_info::query_node_out_size() const {
     return _output_nodes[QUERY].size();
-}
-
-const node_info& node_info::query_node_out(size_t index) const {
-    return *_output_nodes[QUERY][index];
 }
 
 int node_info::node_id() const {

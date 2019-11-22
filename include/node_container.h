@@ -21,12 +21,13 @@ public:
     auto begin(){return _nodes.begin();}
     auto end(){return _nodes.end();}
 private:
-    static bool make_full_connection(id_implies_t & implies);
+    bool build_meta_topology(topology_t & me);
+    bool build_node_topology(topology_t & me);
+    static bool transitive_closure(topology_t & implies);
     void show_meta_depends_graphviz(
-    id_implies_t & meta_implies, std::string tag);
+    topology_t & meta_transitive_closure, std::string tag);
     void show_node_depends_graphviz(std::string tag);
-    static bool graphviz(id_implies_t & target, std::stringstream & ss, std::string tag);
-    bool build_meta_depends(id_implies_t & meta_implies);
+    static bool graphviz(topology_t & target, std::stringstream & ss, std::string tag);
     std::vector<node_ptr> _nodes;
     //std::vector<node_ptr> _end_nodes;
     //std::map<std::string, node_ptr> _name_node_map;

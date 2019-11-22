@@ -27,8 +27,6 @@ public:
     int query_deps_count() const;
     size_t item_node_out_size() const;
     size_t query_node_out_size() const;
-    const node_info & item_node_out(size_t index) const;
-    const node_info & query_node_out(size_t index) const;
     int node_id() const;
     void describe() const;
     void graphviz(std::stringstream&) const;
@@ -49,7 +47,7 @@ public:
     node_io_vec _input_metas[2];
     node_io_vec _output_metas[2];
 
-    std::vector<node_ptr> _input_nodes[2];
-    std::vector<node_ptr> _output_nodes[2];
+    std::set<node_ptr> _input_nodes[2];
+    std::set<node_ptr> _output_nodes[2];
 };
 }
