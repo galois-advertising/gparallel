@@ -8,16 +8,16 @@ using namespace galois::gparallel;
 
 struct base {};
 
-DECL_DATA_META(A, base) {
+DECL_META(A, base) {
 };
 
-DECL_DATA_META(B, base, A) {
+DECL_META(B, base, A) {
 };
 
-DECL_DATA_META(C, base, B) {
+DECL_META(C, base, B) {
 };
 
-DECL_DATA_META(D, base, A, B, C) {
+DECL_META(D, base, A, B, C) {
 };
 
 struct Process

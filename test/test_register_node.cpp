@@ -10,15 +10,15 @@
 using namespace galois::gparallel;
 
 struct base {};
-DECL_DATA_META(MetaB, base) {};
+DECL_META(MetaB, base) {};
 
-DECL_DATA_META(MetaC, base) {};
+DECL_META(MetaC, base) {};
 
-DECL_DATA_META(MetaA, base, MetaC) {};
+DECL_META(MetaA, base, MetaC) {};
 
-DECL_DATA_META(MetaD, base) {};
+DECL_META(MetaD, base) {};
 
-DECL_DATA_META(MetaE, base, MetaD) {};
+DECL_META(MetaE, base, MetaD) {};
 
 struct NodeA
 {

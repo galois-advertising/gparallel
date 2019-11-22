@@ -13,7 +13,7 @@ struct meta_traits : public IMP {
     typedef meta_info_list<IMP, M, MS_dep...> meta_info;
     typedef MDT data_meta_type;
 };
-#define DECL_DATA_META(name, data_meta_type, ms_dep...) template <class IMP> struct name \
+#define DECL_META(name, data_meta_type, ms_dep...) template <class IMP> struct name \
 : public meta_traits<IMP, data_meta_type, name, ##ms_dep>
 
 // T->meta_traits->data_meta_name
