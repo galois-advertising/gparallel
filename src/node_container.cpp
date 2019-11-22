@@ -133,12 +133,10 @@ bool node_container::transitive_closure(topology_t & implies)
 
 bool node_container::build_meta_topology(topology_t & me) {
     for (auto node : _nodes) {
-        for (auto i : {ITEM, QUERY}) {
-            for (auto out : node->_output_metas[i]) {
-                std::transform(node->_input_metas[i].begin(), node->_input_metas[i].end(),
-                    std::inserter(me[out.id], me[out.id].end()),
-                    [](auto & node){ return node.id; });
-            }
+        for (auto out : node->_output_metas) {
+            std::transform(node->_input_metas.begin(), node->_input_metas.end(),
+                std::inserter(me[out.id], me[out.id].end()),
+                [](auto & node){ return node.id; });
         }
     }
     return true;
@@ -146,10 +144,8 @@ bool node_container::build_meta_topology(topology_t & me) {
 
 bool node_container::build_node_topology(topology_t & me) {
     for (auto node : _nodes) {
-        for (auto i : {ITEM, QUERY}) {
-            for (const auto & node_out : node->_output_nodes[i]) {
-                me[node_out->node_id()].insert(node->node_id());
-            }
+        for (const auto & node_out : node->_output_nodes[i]) {
+            me[node_out->node_id()].insert(node->node_id());
         }
     }
     return true;
@@ -162,7 +158,7 @@ bool if_node_in(node_ptr node, std::set<node_ptr> & vec) {
 bool node_container::init()
 {
     if (auto pos = std::find_if(_nodes.begin(), _nodes.end(), [](auto ptr){
-       return ptr->_output_metas[QUERY].size() > 0 && ptr->_output_metas[ITEM].size() > 0;
+       return ptr->_output_metas.size() > 0;
     }); pos != _nodes.end()) {
         //log(FATAL, "can not process both query and item:%s", (*pos)->name().c_str());
         return false;
@@ -171,35 +167,33 @@ bool node_container::init()
     meta_to_nodevec_t sout2nodevec;
     meta_to_node_t output2node;
     for (auto node : _nodes) {
-        for (auto i : {ITEM, QUERY}) {
-            for (auto & meta: node->_output_metas[i]) {
-                // for each output meta of each node
-                switch (meta.type) {
-                case OUTPUT:
-                    if (output2node.count(meta.id) != 0) {
-                        log(FATAL, "%s output fail: node[%s] already output meta[%s]",
-                            node->name().c_str(), output2node[meta.id]->name().c_str(), 
-                            typeid_manager<none_type>::instance().name(meta.id).c_str());
-                        return false;
-                    }
-                    output2node[meta.id] = node;
-                    break;
-                case SOUT:
-                    output2node[meta.id] = 
-                        node_ptr(reinterpret_cast<node_info*>(SOUT_MARK), [](auto){});
-                    sout2nodevec[meta.id].push_back(node);
-                    break;
-                case PRODUCE:
-                    output2node[meta.id] = 
-                        node_ptr(reinterpret_cast<node_info*>(PRODUCE_MARK), [](auto){});
-                    produce2nodevec[meta.id].push_back(node);
-                    break;
-                case INPUT:
-                case NONE:
-                default:
-                    log(FATAL, "should not be here");
-                    break;
+        for (auto & meta: node->_output_metas) {
+            // for each output meta of each node
+            switch (meta.type) {
+            case OUTPUT:
+                if (output2node.count(meta.id) != 0) {
+                    log(FATAL, "%s output fail: node[%s] already output meta[%s]",
+                        node->name().c_str(), output2node[meta.id]->name().c_str(), 
+                        typeid_manager<none_type>::instance().name(meta.id).c_str());
+                    return false;
                 }
+                output2node[meta.id] = node;
+                break;
+            case SOUT:
+                output2node[meta.id] = 
+                    node_ptr(reinterpret_cast<node_info*>(SOUT_MARK), [](auto){});
+                sout2nodevec[meta.id].push_back(node);
+                break;
+            case PRODUCE:
+                output2node[meta.id] = 
+                    node_ptr(reinterpret_cast<node_info*>(PRODUCE_MARK), [](auto){});
+                produce2nodevec[meta.id].push_back(node);
+                break;
+            case INPUT:
+            case NONE:
+            default:
+                log(FATAL, "should not be here");
+                break;
             }
         }
     }
@@ -218,9 +212,7 @@ bool node_container::init()
     for (auto node : _nodes) {
         id_set_t metas_direct_deps;
         {
-            for (auto i : {ITEM, QUERY}) {
-                metas_direct_deps += node->_input_metas[i];
-            }
+            metas_direct_deps += node->_input_metas;
             bool has_reduced = true;
             while (has_reduced) {
                 has_reduced = false;
@@ -233,8 +225,8 @@ bool node_container::init()
                 }
             }
         }
-        auto link_node_by_meta = [&](int index) {
-            for (auto & input_meta : node->_input_metas[index]) {
+        auto link_node_by_meta = [&]() {
+            for (auto & input_meta : node->_input_metas) {
                 if (metas_direct_deps.find(input_meta.id) == metas_direct_deps.end()) {
                     // Only care about of the metas that direct depends.
                     continue;
@@ -248,36 +240,34 @@ bool node_container::init()
                     }
 
                     for (auto ups_node : ups_nodes) {
-                        node->_input_nodes[index].insert(ups_node);
-                        ups_node->_output_nodes[index].insert(node);
+                        node->_input_nodes.insert(ups_node);
+                        ups_node->_output_nodes.insert(node);
                     }
-                    node->_deps_count[index] += 1;
+                    node->_deps_count += 1;
                 } else if (upstream_node.get() == SOUT_MARK) {
                     const auto & ups_nodes = sout2nodevec[input_meta.id];
                     if (ups_nodes.empty()) {
                         return false;
                     }
                     for (auto ups_node : ups_nodes) {
-                        if (if_node_in(ups_node, node->_input_nodes[index])) {
+                        if (if_node_in(ups_node, node->_input_nodes)) {
                             continue;
                         }
-                        node->_input_nodes[index].insert(ups_node);
-                        node->_deps_count[index] += 1;
-                        ups_node->_output_nodes[index].insert(node);
+                        node->_input_nodes.insert(ups_node);
+                        node->_deps_count += 1;
+                        ups_node->_output_nodes.insert(node);
                     }
                 } else if (upstream_node != nullptr) {
-                    node->_input_nodes[index].insert(upstream_node);
-                    upstream_node->_output_nodes[index].insert(node);
-                    node->_deps_count[index] += 1;
+                    node->_input_nodes.insert(upstream_node);
+                    upstream_node->_output_nodes.insert(node);
+                    node->_deps_count += 1;
                 } else {
                     return false;
                 }
             }
             return true;
         };
-        for (auto i : {ITEM, QUERY}) {
-            link_node_by_meta(i);
-        }
+        link_node_by_meta();
     }
     show_node_depends_graphviz("node_depends");
     topology_t node_implies;
@@ -301,19 +291,17 @@ bool node_container::init()
                 }
             }
         }
-        for (auto i : {ITEM, QUERY}) {
-            for (auto input_node_itr = node->_input_nodes[i].begin(); 
-                input_node_itr != node->_input_nodes[i].end(); ++input_node_itr) {
-                if (nodes_direct_deps.count((*input_node_itr)->node_id())) {
-                    continue;
-                }
-                if ((*input_node_itr)->_output_nodes[i].erase(node) < 1) {
-                    return false;
-                }
-                node->_input_nodes[i].erase(input_node_itr);
-                (*input_node_itr)->_output_nodes[i].erase(*input_node_itr);
-                node->_deps_count[i] -= 1;
+        for (auto input_node_itr = node->_input_nodes[i].begin(); 
+            input_node_itr != node->_input_nodes[i].end(); ++input_node_itr) {
+            if (nodes_direct_deps.count((*input_node_itr)->node_id())) {
+                continue;
             }
+            if ((*input_node_itr)->_output_nodes[i].erase(node) < 1) {
+                return false;
+            }
+            node->_input_nodes[i].erase(input_node_itr);
+            (*input_node_itr)->_output_nodes[i].erase(*input_node_itr);
+            node->_deps_count[i] -= 1;
         }
     }
 }  

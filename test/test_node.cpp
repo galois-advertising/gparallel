@@ -40,12 +40,8 @@ TEST(Test, deduce_depends) {
     using namespace galois::gparallel;
     io_description vec;
     deduce_depends<auto_type, Process>::deduce(vec);
-    SHOW(vec.item_input);
-    SHOW(vec.item_output);
-    SHOW(vec.query_output);
-    SHOW(vec.query_output);
-    ASSERT_EQ(vec.item_input.size(), 3);
-    ASSERT_EQ(vec.item_output.size(), 2);
-    ASSERT_EQ(vec.query_input.size(), 0);
-    ASSERT_EQ(vec.query_output.size(), 0);
+    SHOW(vec.input);
+    SHOW(vec.output);
+    ASSERT_EQ(vec.input.size(), 3);
+    ASSERT_EQ(vec.output.size(), 2);
 }

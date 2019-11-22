@@ -30,18 +30,21 @@ enum parameter_type {
     NONE = 0, INPUT, OUTPUT, SOUT, PRODUCE, LIST_VIEW
 };
 
+enum class meta_level_t {
+    NONE_LEVEL = 0, ITEM_LEVEL, QUERY_LEVEL
+};
+
 struct io_item {
     int id;
+    meta_level_t meta_level;
     parameter_type type;
 };
 
 typedef std::map<int, io_item> node_io_map;
 typedef std::vector<io_item> node_io_vec;
 struct io_description {
-    node_io_map item_input;
-    node_io_map item_output;
-    node_io_map query_input;
-    node_io_map query_output;
+    node_io_map input;
+    node_io_map output;
 };
 template <class D, template <class> class... MS> struct meta_info_list {};
 template <template <class> class... TMPS> struct template_list {};
@@ -144,23 +147,16 @@ void push_io(io_description & iodes) {
         return;
     }
 
+    bool is_item = true;
     io_item link;
     link.id = parameter_traits<A>::id();
     link.type = parameter_traits<A>::ptype;
+    link.meta_level = is_item ? ITEM_LEVEL : QUERY_LEVEL;
 
-    bool is_item = true;
     if (link.type == INPUT) {
-        if (is_item) {
-            iodes.item_input[link.id] = link;
-        } else {
-            iodes.query_input[link.id] = link;
-        }
+        iodes.input[link.id] = link;
     } else {
-        if (is_item) {
-            iodes.item_output[link.id] = link;
-        } else {
-            iodes.query_output[link.id] = link;
-        }
+        iodes.output[link.id] = link;
     }
 };
 

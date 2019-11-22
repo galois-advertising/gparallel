@@ -31,8 +31,7 @@ node_info::node_info() {
     _query_fn = nullptr;
     _end_fn = nullptr;
     _node_user_id = 0;
-    _deps_count[ITEM] = 0;
-    _deps_count[QUERY] = 0;
+    _deps_count = 0;
 }
 
 
@@ -47,7 +46,7 @@ void node_info::initialize(
     _batch_fn = batch_fn;
     _query_fn = query_fn;
     _end_fn = end_fn;
-    _has_item_input = (io.item_input.size() > 0);
+    _has_item_input = (io.input.size() > 0);
 
     auto fill_meta = [](const node_io_map & s, node_io_vec & d) {
         d.reserve(s.size());
@@ -55,17 +54,13 @@ void node_info::initialize(
             d.push_back(node.second);
         }
     };
-    fill_meta(io.item_input, _input_metas[ITEM]);
-    fill_meta(io.item_output, _output_metas[ITEM]);
-    fill_meta(io.query_input, _input_metas[QUERY]);
-    fill_meta(io.query_output, _output_metas[QUERY]);
+    fill_meta(io.input, _input_metas);
+    fill_meta(io.output, _output_metas);
 }
 
 void node_info::graphviz(std::stringstream & out) const {
-    for (auto i : {ITEM, QUERY}) {
-        for (auto node : _input_nodes[i]) {
-            out<<"\""<<name()<<"\" -> \""<<node->name()<<"\";"<<std::endl;
-        }
+    for (auto node : _input_nodes) {
+        out<<"\""<<name()<<"\" -> \""<<node->name()<<"\";"<<std::endl;
     }
 }
 
@@ -82,19 +77,19 @@ std::string node_info::name() const {
 }
 
 int node_info::item_deps_count() const {
-    return _deps_count[ITEM];
+    return _deps_count;
 }
 
 size_t node_info::item_node_out_size() const {
-    return _output_nodes[ITEM].size();
+    return _output_nodes.size();
 }
 
 int node_info::query_deps_count() const {
-    return _deps_count[QUERY];
+    return _deps_count;
 }
 
 size_t node_info::query_node_out_size() const {
-    return _output_nodes[QUERY].size();
+    return _output_nodes.size();
 }
 
 int node_info::node_id() const {

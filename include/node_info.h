@@ -3,8 +3,6 @@
 #include "util.h"
 #include <sstream>
 namespace galois::gparallel {
-#define ITEM (0)
-#define QUERY (1)
 typedef int id_t;
 class node;
 class node_info;
@@ -41,13 +39,13 @@ public:
     end_function_type _end_fn;
     id_t _node_id;
     int _node_user_id;
-    int _deps_count[2];
+    int _deps_count;
     std::string _name;
 
-    node_io_vec _input_metas[2];
-    node_io_vec _output_metas[2];
+    node_io_vec _input_metas;
+    node_io_vec _output_metas;
 
-    std::set<node_ptr> _input_nodes[2];
-    std::set<node_ptr> _output_nodes[2];
+    std::set<node_ptr> _input_nodes;
+    std::set<node_ptr> _output_nodes;
 };
 }
