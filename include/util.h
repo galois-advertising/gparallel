@@ -26,12 +26,12 @@ enum LOG_LEVEL {
 };
 void log(LOG_LEVEL loglevel, const char * fmt, ...);
 
-enum parameter_type {
+enum class parameter_type {
     NONE = 0, INPUT, OUTPUT, SOUT, PRODUCE, LIST_VIEW
 };
 
 enum class meta_level_t {
-    NONE_LEVEL = 0, ITEM_LEVEL, QUERY_LEVEL
+    NONE = 0, ITEM, QUERY
 };
 
 struct io_item {
@@ -106,7 +106,7 @@ template <template <class> class M>
 struct parameter_traits< input<M> > {
     typedef type_id<typename M<none_type>::meta_info, none_type> node_meta_id;
     typedef typename M<none_type>::meta_info meta_info;
-    static const parameter_type ptype = INPUT;
+    static const parameter_type ptype = parameter_type::INPUT;
     static int id() {
         return node_meta_id::instance().id();
     }
@@ -119,7 +119,7 @@ template <template <class> class M>
 struct parameter_traits< output<M> > {
     typedef type_id<typename M<none_type>::meta_info, none_type> node_meta_id;
     typedef typename M<none_type>::meta_info meta_info;
-    static const parameter_type ptype = OUTPUT;
+    static const parameter_type ptype = parameter_type::OUTPUT;
     static int id() {
         return node_meta_id::instance().id();
     }
@@ -132,7 +132,7 @@ template <template <class> class M>
 struct parameter_traits< produce<M> > {
     typedef type_id<typename M<none_type>::meta_info, none_type> node_meta_id;
     typedef typename M<none_type>::meta_info meta_info;
-    static const parameter_type ptype = PRODUCE;
+    static const parameter_type ptype = parameter_type::PRODUCE;
     static int id() {
         return node_meta_id::instance().id();
     }
@@ -143,7 +143,7 @@ struct parameter_traits< produce<M> > {
 
 template <class A, class NT>
 void push_io(io_description & iodes) {
-    if (parameter_traits<A>::ptype == NONE) {
+    if (parameter_traits<A>::ptype == parameter_type::NONE) {
         return;
     }
 
@@ -151,9 +151,9 @@ void push_io(io_description & iodes) {
     io_item link;
     link.id = parameter_traits<A>::id();
     link.type = parameter_traits<A>::ptype;
-    link.meta_level = is_item ? ITEM_LEVEL : QUERY_LEVEL;
+    link.meta_level = is_item ? meta_level_t::ITEM : meta_level_t::QUERY;
 
-    if (link.type == INPUT) {
+    if (link.type == parameter_type::INPUT) {
         iodes.input[link.id] = link;
     } else {
         iodes.output[link.id] = link;

@@ -144,7 +144,7 @@ bool node_container::build_meta_topology(topology_t & me) {
 
 bool node_container::build_node_topology(topology_t & me) {
     for (auto node : _nodes) {
-        for (const auto & node_out : node->_output_nodes[i]) {
+        for (const auto & node_out : node->_output_nodes) {
             me[node_out->node_id()].insert(node->node_id());
         }
     }
@@ -158,7 +158,16 @@ bool if_node_in(node_ptr node, std::set<node_ptr> & vec) {
 bool node_container::init()
 {
     if (auto pos = std::find_if(_nodes.begin(), _nodes.end(), [](auto ptr){
-       return ptr->_output_metas.size() > 0;
+        size_t query_meta_cnt = 0;
+        size_t item_meta_cnt = 0;
+        for (auto & output : ptr->_output_metas) {
+            if (output.meta_level == meta_level_t::ITEM) {
+                item_meta_cnt ++;
+            } else if (output.meta_level == meta_level_t::QUERY) {
+                query_meta_cnt ++;
+            }
+            return item_meta_cnt > 0 && query_meta_cnt > 0;
+        }
     }); pos != _nodes.end()) {
         //log(FATAL, "can not process both query and item:%s", (*pos)->name().c_str());
         return false;
@@ -170,7 +179,7 @@ bool node_container::init()
         for (auto & meta: node->_output_metas) {
             // for each output meta of each node
             switch (meta.type) {
-            case OUTPUT:
+            case parameter_type::OUTPUT:
                 if (output2node.count(meta.id) != 0) {
                     log(FATAL, "%s output fail: node[%s] already output meta[%s]",
                         node->name().c_str(), output2node[meta.id]->name().c_str(), 
@@ -179,18 +188,18 @@ bool node_container::init()
                 }
                 output2node[meta.id] = node;
                 break;
-            case SOUT:
+            case parameter_type::SOUT:
                 output2node[meta.id] = 
                     node_ptr(reinterpret_cast<node_info*>(SOUT_MARK), [](auto){});
                 sout2nodevec[meta.id].push_back(node);
                 break;
-            case PRODUCE:
+            case parameter_type::PRODUCE:
                 output2node[meta.id] = 
                     node_ptr(reinterpret_cast<node_info*>(PRODUCE_MARK), [](auto){});
                 produce2nodevec[meta.id].push_back(node);
                 break;
-            case INPUT:
-            case NONE:
+            case parameter_type::INPUT:
+            case parameter_type::NONE:
             default:
                 log(FATAL, "should not be here");
                 break;
@@ -204,9 +213,9 @@ bool node_container::init()
         if (transitive_closure(meta_transitive_closure)) {
             show_meta_depends_graphviz(meta_transitive_closure, "meta_transitive_closure");
         } else {
+            log(FATAL, "transitive_closure(meta_transitive_closure) fail");
             return false;
         } 
-        return false;
     }
 
     for (auto node : _nodes) {
@@ -273,7 +282,7 @@ bool node_container::init()
     topology_t node_implies;
     build_node_topology(node_implies);
     if (!transitive_closure(node_implies)) {
-        BOOST_LOG_TRIVIAL(warning) << "node: transitive_closure fail.";
+        BOOST_LOG_TRIVIAL(fatal) << "node: transitive_closure fail.";
         return false;
     }
     for (auto node : _nodes) {
@@ -291,19 +300,21 @@ bool node_container::init()
                 }
             }
         }
-        for (auto input_node_itr = node->_input_nodes[i].begin(); 
-            input_node_itr != node->_input_nodes[i].end(); ++input_node_itr) {
+        for (auto input_node_itr = node->_input_nodes.begin(); 
+            input_node_itr != node->_input_nodes.end(); ++input_node_itr) {
             if (nodes_direct_deps.count((*input_node_itr)->node_id())) {
                 continue;
             }
-            if ((*input_node_itr)->_output_nodes[i].erase(node) < 1) {
+            if ((*input_node_itr)->_output_nodes.erase(node) < 1) {
                 return false;
             }
-            node->_input_nodes[i].erase(input_node_itr);
-            (*input_node_itr)->_output_nodes[i].erase(*input_node_itr);
-            node->_deps_count[i] -= 1;
+            node->_input_nodes.erase(input_node_itr);
+            (*input_node_itr)->_output_nodes.erase(*input_node_itr);
+            node->_deps_count -= 1;
         }
     }
+    show_node_depends_graphviz("node_depends_after");
+    return true;
 }  
 
 }

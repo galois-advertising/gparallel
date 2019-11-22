@@ -49,5 +49,5 @@ TEST(Test, register_node) {
     using namespace galois::gparallel;
     node_container nodes;
     register_node<NodeA, NodeB, NodeC, NodeD, NodeE>::reg(nodes);
-    nodes.init();
+    ASSERT_EQ(nodes.init(), true);
 }
