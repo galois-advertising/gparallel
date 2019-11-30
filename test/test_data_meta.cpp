@@ -7,34 +7,35 @@
 using namespace galois::gparallel;
 struct thread_data {
     int advid;
-    thread_data(const int & a) : advid(a) {}
+    thread_data(int a) : advid(a) {}
 };
+typedef const thread_data * cp_thread_data;
 
-DECL_META(AAA, thread_data){
+DECL_META(AAA, cp_thread_data){
     int value;
     AAA(const int & a) : value(a) {}
 };
-DECL_META(AAB, thread_data){
+DECL_META(AAB, cp_thread_data){
     int value;
     AAB(const int & a) : value(a) {}
 };
-DECL_META(AAC, thread_data){
+DECL_META(AAC, cp_thread_data){
     int value;
     AAC(const int & a) : value(a) {}
 };
-DECL_META(AA, thread_data, AAA, AAB, AAC){};
+DECL_META(AA, cp_thread_data, AAA, AAB, AAC){};
 
-DECL_META(ABA, thread_data){};
-DECL_META(ABB, thread_data){};
-DECL_META(ABC, thread_data){};
-DECL_META(AB, thread_data, ABA, ABB, ABC){};
+DECL_META(ABA, cp_thread_data){};
+DECL_META(ABB, cp_thread_data){};
+DECL_META(ABC, cp_thread_data){};
+DECL_META(AB, cp_thread_data, ABA, ABB, ABC){};
 
-DECL_META(ACA, thread_data){};
-DECL_META(ACB, thread_data){};
-DECL_META(ACC, thread_data){};
-DECL_META(AC, thread_data, ACA, ACB, ACC){};
+DECL_META(ACA, cp_thread_data){};
+DECL_META(ACB, cp_thread_data){};
+DECL_META(ACC, cp_thread_data){};
+DECL_META(AC, cp_thread_data, ACA, ACB, ACC){};
 
-DECL_META(A, thread_data, AA, AB, AC){};
+DECL_META(A, cp_thread_data, AA, AB, AC){};
 
 TEST(Test, data_meta) {
     using namespace galois::gparallel;
