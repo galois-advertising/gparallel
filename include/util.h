@@ -7,6 +7,7 @@
 #include <iostream>
 #include <cxxabi.h>
 #include "type_id.h"
+#include "varlist.h"
 
 namespace galois::gparallel 
 {
@@ -64,7 +65,7 @@ public:
         _data = data;
     }
     template <class P>
-    static void deduce(io_description&) {}
+    static void deduce(io_description&) {/*End of deduce recurs, do nothing.*/}
     const T * data() const {
         return _data;
     }
@@ -73,96 +74,26 @@ public:
     }
     T * _data;
 };
-template <template<class> class M>
-class input {
-public:
-    typedef typename M<none_type>::meta_info meta_info;
-    typedef typename M<none_type>::data_meta_type data_meta_type;
-};
-
-template <template<class> class M>
-class output {
-public:
-    typedef typename M<none_type>::meta_info meta_info;
-    typedef typename M<none_type>::data_meta_type data_meta_type;
-    typedef M<data_wrapper<data_meta_type>> * meta_imp_type;
-
-    output(meta_imp_type v) : _v(v) {}
-    meta_imp_type _v;
-};
-
-template <template<class> class M>
-class produce {
-public:
-    typedef typename M<none_type>::meta_info meta_info;
-    typedef typename M<none_type>::data_meta_type data_meta_type;
-};
-
-template <class M>
-struct parameter_traits {
-};
-
-template <template <class> class M>
-struct parameter_traits< input<M> > {
-    typedef type_id<typename M<none_type>::meta_info, none_type> node_meta_id;
-    typedef typename M<none_type>::meta_info meta_info;
-    static const parameter_type ptype = parameter_type::INPUT;
-    static int id() {
-        return node_meta_id::instance().id();
-    }
-    static const char * name() {
-        return node_meta_id::instance().name();
-    }
-};
-
-template <template <class> class M>
-struct parameter_traits< output<M> > {
-    typedef type_id<typename M<none_type>::meta_info, none_type> node_meta_id;
-    typedef typename M<none_type>::meta_info meta_info;
-    static const parameter_type ptype = parameter_type::OUTPUT;
-    static int id() {
-        return node_meta_id::instance().id();
-    }
-    static const char* name() {
-        return node_meta_id::instance().name();
-    }
-};
-
-template <template <class> class M>
-struct parameter_traits< produce<M> > {
-    typedef type_id<typename M<none_type>::meta_info, none_type> node_meta_id;
-    typedef typename M<none_type>::meta_info meta_info;
-    static const parameter_type ptype = parameter_type::PRODUCE;
-    static int id() {
-        return node_meta_id::instance().id();
-    }
-    static const char* name() {
-        return node_meta_id::instance().name();
-    }
-};
-
-template <class A, class NT>
-void push_io(io_description & iodes) {
-    if (parameter_traits<A>::ptype == parameter_type::NONE) {
-        return;
-    }
-
-    bool is_item = true;
-    io_item link;
-    link.id = parameter_traits<A>::id();
-    link.type = parameter_traits<A>::ptype;
-    link.meta_level = is_item ? meta_level_t::ITEM : meta_level_t::QUERY;
-
-    if (link.type == parameter_type::INPUT) {
-        iodes.input[link.id] = link;
-    } else {
-        iodes.output[link.id] = link;
-    }
-};
 
 class node;
 typedef void(*batch_function_type)(node&);
 typedef void(*query_function_type)(node&);
 typedef void(*end_function_type)(node&);
+
+//template <class P, class... AS>
+//struct process_traits_imp{
+    //typedef varlist<typename parameter_traits<AS>::LocalTp...> list;
+//};
+//template <class P, class F>
+//struct ProcTraits {};
+//
+//template <class P, class R, class... AS>
+//struct process_traits_helper<P, R(*)(AS...)> : public process_traits_imp<P, AS...> {};
+//
+//template <class P, class R, class...AS>
+//struct process_traits_helper<P, R(P::*)(AS...)> : public process_traits_imp<P, AS...> {};
+//
+//template <class P>
+//struct process_traits : public process_traits_helper<P, decltype(&P::process)> {};
 
 }

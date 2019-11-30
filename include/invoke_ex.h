@@ -1,4 +1,5 @@
 #pragma once
+#include "util.h"
 #include <type_traits>
 /***************************************************************************
 *  An extended version of std::invoke, support pass parameters in any order.
@@ -17,7 +18,7 @@
 
 namespace galois::gparallel {
 
-template <class... type> struct type_list {};
+//template <class... type> struct type_list {};
 template <class T, int I, class... AS>
 struct find_index {
     typedef char type[I];
