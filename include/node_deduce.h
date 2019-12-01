@@ -19,7 +19,7 @@ template <class A, class NT>
 struct deduce_op {
     static void deduce(io_description & iodes) {
         push_io<A, NT>(iodes);
-        meta::input_meta_imp<typename parameter_traits<A>::meta_info>::template deduce<NT>(iodes);
+        input_meta_imp<typename parameter_traits<A>::meta_info>::template deduce<NT>(iodes);
     }
 };
 

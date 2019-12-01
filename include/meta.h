@@ -10,13 +10,13 @@ template <class T, class MT,
     template <class> class M, 
     template <class> class... MS_dep>
 struct meta_traits : public T{
-    typedef meta_info_list<T, M, MS_dep...> meta_info;
-    typedef MT meta_type;
+    typedef meta_info_list<MT, M, MS_dep...> meta_info;
+    typedef MT meta_storage;
 };
-#define DECL_META(name, meta_type, ms_dep...) template <class T> \
-struct name : public meta_traits<T, meta_type, name, ##ms_dep>
+#define DECL_META(name, meta_storage, ms_dep...) template <class T> \
+struct name : public meta_traits<T, meta_storage, name, ##ms_dep>
 // DECL_MEAT(MetaName, MetaType, OtherMetaName...)
-// MetaName<auto_type>[getters, setters] -> meta_traits[meta_info, meta_type] -> auto_type    
+// MetaName<auto_type>[getters, setters] -> meta_traits[meta_info, meta_storage] -> auto_type    
 // `data_meta_name` is essentially a T.
 // Between `data_meta_name` and T, there a meta_traits 
 // for describe: 

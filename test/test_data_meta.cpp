@@ -6,36 +6,46 @@
 #include "meta_decorator.h"
 using namespace galois::gparallel;
 struct thread_data {
-    int advid;
+    int AAA_storage = 0;
+    int AAB_storage = 0;
+    int AAC_storage = 0;
+
+    int ABA_storage = 0;
+    int ABB_storage = 0;
+    int ABC_storage = 0;
+
+    int ACA_storage = 0;
+    int ACB_storage = 0;
+    int ACC_storage = 0;
+
+    int AA_storage = 0;
+    int AB_storage = 0;
+    int AC_storage = 0;
+
+    int A_storage = 0;
     thread_data(int a) : advid(a) {}
 };
-typedef const thread_data * cp_thread_data;
 
-DECL_META(AAA, cp_thread_data){
-    int value;
-    AAA(const int & a) : value(a) {}
+DECL_META(AAA, thread_data){
+    const int & AAA() const { return this->data->AAA_storage;}
+    const int & AAA() const { return this->data->AAA_storage;}
 };
-DECL_META(AAB, cp_thread_data){
-    int value;
-    AAB(const int & a) : value(a) {}
-};
-DECL_META(AAC, cp_thread_data){
-    int value;
-    AAC(const int & a) : value(a) {}
-};
-DECL_META(AA, cp_thread_data, AAA, AAB, AAC){};
 
-DECL_META(ABA, cp_thread_data){};
-DECL_META(ABB, cp_thread_data){};
-DECL_META(ABC, cp_thread_data){};
-DECL_META(AB, cp_thread_data, ABA, ABB, ABC){};
+DECL_META(AAB, thread_data){};
+DECL_META(AAC, thread_data){};
+DECL_META(AA, thread_data, AAA, AAB, AAC){};
 
-DECL_META(ACA, cp_thread_data){};
-DECL_META(ACB, cp_thread_data){};
-DECL_META(ACC, cp_thread_data){};
-DECL_META(AC, cp_thread_data, ACA, ACB, ACC){};
+DECL_META(ABA, thread_data){};
+DECL_META(ABB, thread_data){};
+DECL_META(ABC, thread_data){};
+DECL_META(AB, thread_data, ABA, ABB, ABC){};
 
-DECL_META(A, cp_thread_data, AA, AB, AC){};
+DECL_META(ACA, thread_data){};
+DECL_META(ACB, thread_data){};
+DECL_META(ACC, thread_data){};
+DECL_META(AC, thread_data, ACA, ACB, ACC){};
+
+DECL_META(A, thread_data, AA, AB, AC){};
 
 TEST(Test, data_meta) {
     using namespace galois::gparallel;

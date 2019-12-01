@@ -54,14 +54,14 @@ struct input_meta_imp_op<C, template_list<M, MS_dep ...>>
 template <class T> struct input_meta_imp {};
 template <class D, template <class> class M, template <class> class... MS_dep>
 struct input_meta_imp< meta_info_list<D, M, MS_dep ...> > 
-    : public M<input_meta_imp_op<data_wrapper<D>, template_list<MS_dep ...>>> 
+    : public M<input_meta_imp_op<storage_reference<D>, template_list<MS_dep ...>>> 
 {
     input_meta_imp(const D * data) {
         this->reset(const_cast<D*>(data)); 
     }
     template <class P>
     static void deduce(io_description & deps) {
-        input_meta_imp_op<data_wrapper<D>, template_list<MS_dep ...>>::template deduce<P>(deps);
+        input_meta_imp_op<storage_reference<D>, template_list<MS_dep ...>>::template deduce<P>(deps);
     };
 };
 

@@ -115,14 +115,14 @@ struct input_meta_imp_op<C, template_list<M, MS_dep ...>>
 template <class T> struct input_meta_imp {};
 template <class D, template <class> class M, template <class> class... MS_dep>
 struct input_meta_imp< meta_info_list<D, M, MS_dep ...> > 
-    : public M<input_meta_imp_op<data_wrapper<D>, template_list<MS_dep ...>>> 
+    : public M<input_meta_imp_op<storage_reference<D>, template_list<MS_dep ...>>> 
 {
     input_meta_imp(const D * data) {
         this->reset(const_cast<D*>(data)); 
     }
     template <class P>
     static void deduce(io_description & deps) {
-        input_meta_imp_op<data_wrapper<D>, template_list<MS_dep ...>>::template deduce<P>(deps);
+        input_meta_imp_op<storage_reference<D>, template_list<MS_dep ...>>::template deduce<P>(deps);
     };
 };
 
@@ -132,9 +132,9 @@ template <template<class> class M>
 class input {
 public:
     typedef typename M<none_type>::meta_info meta_info;
-    typedef typename M<none_type>::meta_type data_meta_type;
+    typedef typename M<none_type>::meta_storage data_meta_storage;
     typedef input_meta_imp<meta_info> input_imp;
-    input(const data_meta_type data) : _m(const_cast<data_meta_type>(data)) {}
+    input(const data_meta_storage * data) : _m(const_cast<data_meta_storage*>(data)) {}
     template <template <class> class AnyM>
     operator input<AnyM>() {
         return input<AnyM>(_m.data());
@@ -147,11 +147,11 @@ template <template<class> class M>
 class output {
 public:
     typedef typename M<none_type>::meta_info meta_info;
-    typedef typename M<none_type>::data_meta_type data_meta_type;
-    typedef M<data_wrapper<data_meta_type>> * meta_imp_type;
+    typedef typename M<none_type>::meta_storage data_meta_storage;
+    typedef M<storage_reference<data_meta_storage>> * meta_imp_type;
 
-    struct output_storage_t : public M<data_wrapper<data_meta_type>> {
-        output_storage_t (data_meta_type * data) { this->reset(data); }
+    struct output_storage_t : public M<storage_reference<data_meta_storage>> {
+        output_storage_t (data_meta_storage * data) { this->reset(data); }
     };
 
     output(meta_imp_type v) : _v(v) {}
@@ -162,7 +162,7 @@ template <template<class> class M>
 class produce {
 public:
     typedef typename M<none_type>::meta_info meta_info;
-    typedef typename M<none_type>::data_meta_type data_meta_type;
+    typedef typename M<none_type>::meta_storage data_meta_storage;
 };
 
 }

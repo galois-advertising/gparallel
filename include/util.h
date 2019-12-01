@@ -58,7 +58,7 @@ std::string type(const T& t) {
 }
 
 template <class T>
-class data_wrapper{
+class storage_reference {
 public:
     typedef T data_type;
     void reset(T * data) {
