@@ -3,11 +3,11 @@
 #include <map>
 #include <set>
 #include <sstream>
-#include <boost/log/trivial.hpp>
 #include "node_container.h"
 #include "type_id.h"
 #include "util.h"
 #include <regex>
+#include "log.h"
 
 
 namespace galois::gparallel
@@ -69,9 +69,10 @@ void node_container::show_meta_depends_graphviz(
         }
     }
     meta_depends_log<<"}";
-    auto log = meta_depends_log.str();
+    auto log_str = meta_depends_log.str();
     std::regex re("galois::gparallel::none_type, |galois::gparallel::meta_info_list");
-    BOOST_LOG_TRIVIAL(warning) <<tag<<std::endl<<"http://graphviz.it/#" <<std::endl<<std::regex_replace(log, re, "");
+    INFO("%s\nhttp://graphviz.it/#", tag.c_str());
+    INFO("%s", std::regex_replace(log_str, re, "").c_str());
 
 }
 
@@ -85,9 +86,10 @@ void node_container::show_node_depends_graphviz(std::string tag)
         node->graphviz(node_depends_log);
     }
     node_depends_log<<"}";
-    auto log = node_depends_log.str();
+    auto log_str = node_depends_log.str();
     std::regex re("galois::gparallel::none_type, |galois::gparallel::meta_info_list");
-    BOOST_LOG_TRIVIAL(warning) <<tag<<std::endl<<"http://graphviz.it/#" <<std::endl<<std::regex_replace(log, re, "");
+    INFO("%s\nhttp://graphviz.it/#", tag.c_str());
+    INFO("%s", std::regex_replace(log_str, re, "").c_str());
 
 }
 
@@ -168,7 +170,7 @@ bool node_container::init()
         }
         return item_meta_cnt > 0 && query_meta_cnt > 0;
     }); pos != _nodes.end()) {
-        //log(FATAL, "can not process both query and item:%s", (*pos)->name().c_str());
+        FATAL("can not process both query and item:%s", (*pos)->name().c_str());
         return false;
     }
     meta_to_nodevec_t produce2nodevec;
@@ -180,7 +182,7 @@ bool node_container::init()
             switch (meta.type) {
             case parameter_type::OUTPUT:
                 if (output2node.count(meta.id) != 0) {
-                    log(FATAL, "%s output fail: node[%s] already output meta[%s]",
+                    FATAL("%s output fail: node[%s] already output meta[%s]",
                         node->name().c_str(), output2node[meta.id]->name().c_str(), 
                         typeid_manager<none_type>::instance().name(meta.id).c_str());
                     return false;
@@ -200,7 +202,7 @@ bool node_container::init()
             case parameter_type::INPUT:
             case parameter_type::NONE:
             default:
-                log(FATAL, "should not be here");
+                FATAL("should not be here", "");
                 break;
             }
         }
@@ -212,7 +214,7 @@ bool node_container::init()
         if (transitive_closure(meta_transitive_closure)) {
             show_meta_depends_graphviz(meta_transitive_closure, "meta_transitive_closure");
         } else {
-            log(FATAL, "transitive_closure(meta_transitive_closure) fail");
+            FATAL("transitive_closure(meta_transitive_closure) fail", "");
             return false;
         } 
     }
@@ -281,7 +283,7 @@ bool node_container::init()
     topology_t node_implies;
     build_node_topology(node_implies);
     if (!transitive_closure(node_implies)) {
-        BOOST_LOG_TRIVIAL(fatal) << "node: transitive_closure fail.";
+        FATAL("node: transitive_closure fail.", "");
         return false;
     }
     for (auto node : _nodes) {

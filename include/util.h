@@ -17,15 +17,6 @@ struct auto_type {};
 
 
 std::string demangle(const char* name);
-enum LOG_LEVEL {
-    FATAL,
-    ERROR,
-    WARNING,
-    INFO,
-    DEBUG,
-    TRACE
-};
-void log(LOG_LEVEL loglevel, const char * fmt, ...);
 
 enum class parameter_type {
     NONE = 0, INPUT, OUTPUT, SOUT, PRODUCE, LIST_VIEW
