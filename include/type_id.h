@@ -12,7 +12,8 @@ typedef int id_t;
 typedef std::set<id_t> id_set_t;
 typedef std::map<id_t, id_set_t> topology_t;
 std::string demangle(const char* name);
-// For every tag, the id is global uniqe
+
+// For every tag, the id is global unique
 template <class tag>
 class typeid_manager {
 public:

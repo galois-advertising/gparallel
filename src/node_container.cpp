@@ -91,7 +91,6 @@ void node_container::show_node_depends_graphviz(std::string tag)
 
 }
 
-
 bool node_container::graphviz(topology_t & target, std::stringstream & ss, std::string tag)
 {
     ss<<"digraph "<<tag<<"{"<<std::endl;
@@ -166,8 +165,8 @@ bool node_container::init()
             } else if (output.meta_level == meta_level_t::QUERY) {
                 query_meta_cnt ++;
             }
-            return item_meta_cnt > 0 && query_meta_cnt > 0;
         }
+        return item_meta_cnt > 0 && query_meta_cnt > 0;
     }); pos != _nodes.end()) {
         //log(FATAL, "can not process both query and item:%s", (*pos)->name().c_str());
         return false;

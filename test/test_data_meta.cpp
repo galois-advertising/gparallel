@@ -23,12 +23,11 @@ struct thread_data {
     int AC_storage = 0;
 
     int A_storage = 0;
-    thread_data(int a) : advid(a) {}
+    thread_data(int a) {}
 };
 
 DECL_META(AAA, thread_data){
-    const int & AAA() const { return this->data->AAA_storage;}
-    const int & AAA() const { return this->data->AAA_storage;}
+    const int & AAA_storage() const { return this->data->AAA_storage;}
 };
 
 DECL_META(AAB, thread_data){};

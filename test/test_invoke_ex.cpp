@@ -20,7 +20,6 @@ TEST(Test, invoke_ex) {
     B b;
     C c;
     D d;
-    E e;
     // any order of a,b,c,d is ok
     ASSERT_EQ(invoke_ex(fn, a, b, c, d), 1);
     ASSERT_EQ(invoke_ex(fn, d, b, c, a), 1);
