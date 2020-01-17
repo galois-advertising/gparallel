@@ -6,13 +6,15 @@
 #include "dag_schema.h"
 #include "type_id.h"
 #include "util.h"
-#include <regex>
 #include "log.h"
 #include "debug.h"
 
 
 namespace galois::gparallel
 {
+
+typedef std::map< id_t, std::vector<node_schema_ptr> > meta_to_nodevec_t;
+typedef std::map< id_t, node_schema_ptr > meta_to_node_t;
 
 void operator += (id_set_t & i, const id_set_t & other)
 {
@@ -50,8 +52,8 @@ void operator += (id_set_t & i, const node_io_vec & other)
         [](auto o){return o.id;});
 }
 
-static node_info * const PRODUCE_MARK = reinterpret_cast<node_info*>(0x1);
-static node_info * const SOUT_MARK = reinterpret_cast<node_info*>(0x2);
+static node_schema * const PRODUCE_MARK = reinterpret_cast<node_schema*>(0x1);
+static node_schema * const SOUT_MARK = reinterpret_cast<node_schema*>(0x2);
 
 bool transitive_closure(topology_t & implies)
 {
@@ -98,7 +100,7 @@ bool build_node_topology(const dag_schema & _nodes, topology_t & me) {
     return true;
 }
 
-bool if_node_in(node_ptr node, std::set<node_ptr> & vec) {
+bool if_node_in(node_schema_ptr node, std::set<node_schema_ptr> & vec) {
     return std::find(vec.begin(), vec.end(), node) != vec.end();
 }
 
@@ -137,12 +139,12 @@ bool setup_dag_schema(dag_schema & _nodes)
                 break;
             case parameter_type::SOUT:
                 output2node[meta.id] = 
-                    node_ptr(reinterpret_cast<node_info*>(SOUT_MARK), [](auto){});
+                    node_schema_ptr(reinterpret_cast<node_schema*>(SOUT_MARK), [](auto){});
                 sout2nodevec[meta.id].push_back(node);
                 break;
             case parameter_type::PRODUCE:
                 output2node[meta.id] = 
-                    node_ptr(reinterpret_cast<node_info*>(PRODUCE_MARK), [](auto){});
+                    node_schema_ptr(reinterpret_cast<node_schema*>(PRODUCE_MARK), [](auto){});
                 produce2nodevec[meta.id].push_back(node);
                 break;
             case parameter_type::INPUT:

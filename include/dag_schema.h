@@ -3,27 +3,20 @@
 #include <vector>
 #include <memory>
 #include "node_deduce.h"
-#include "node_info.h"
+#include "node_schema.h"
 #include "util.h"
 
 
 namespace galois::gparallel
 {
-
-typedef std::map< id_t, std::vector<node_ptr> > meta_to_nodevec_t;
-typedef std::map< id_t, node_ptr > meta_to_node_t;
-typedef std::vector<node_ptr> dag_schema;
+typedef std::vector<node_schema_ptr> dag_schema;
 
 bool setup_dag_schema(dag_schema & _nodes);
-bool build_meta_topology(const dag_schema & _nodes, topology_t & me);
-bool build_node_topology(const dag_schema & _nodes, topology_t & me);
-bool transitive_closure(topology_t & implies);
-
 template <class NT>
 void register_node_operator(dag_schema & c)
 {
     std::string name = demangle(typeid(NT).name());
-    auto new_node = std::make_shared<node_info>();
+    auto new_node = std::make_shared<node_schema>();
     c.push_back(new_node);
     io_description vec;
     deduce_depends<auto_type, NT>::deduce(vec);

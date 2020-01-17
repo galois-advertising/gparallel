@@ -8,16 +8,16 @@ namespace galois::gparallel {
 
 typedef int id_t;
 class node;
-class node_info;
-typedef std::shared_ptr<node_info> node_ptr;
-typedef std::shared_ptr<const node_info> node_cptr;
+class node_schema;
+typedef std::shared_ptr<node_schema> node_schema_ptr;
+typedef std::shared_ptr<const node_schema> node_schema_cptr;
 
 // This class holds all the information of a physical node, 
 // including node name, node ID, upstream nodes, downstream nodes, 
 // input and output metas.
-class node_info {
+class node_schema {
 public:
-    node_info();
+    node_schema();
     void initialize(std::string name, 
         batch_function_type batch_fn, query_function_type query_fn, 
         end_function_type end_fn, const io_description & io);
@@ -54,7 +54,7 @@ public:
 
     // gParallel can infer upstream and downstream nodes 
     // through input and output meta which were staraged here
-    std::set<node_ptr> _input_nodes;
-    std::set<node_ptr> _output_nodes;
+    std::set<node_schema_ptr> _input_nodes;
+    std::set<node_schema_ptr> _output_nodes;
 };
 }

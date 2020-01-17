@@ -3,11 +3,10 @@
 #include <map>
 #include <set>
 #include <sstream>
+#include <regex>
 #include "dag_schema.h"
 #include "type_id.h"
 #include "util.h"
-#include <regex>
-#include <regex>
 #include "log.h"
 #include "debug.h"
 
