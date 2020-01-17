@@ -5,7 +5,7 @@
 #include "node_deduce.h"
 #include "util.h"
 #include "meta.h"
-#include "node_container.h"
+#include "dag_schema.h"
 #include "type_id.h"
 #include "varlist.h"
 using namespace galois::gparallel;

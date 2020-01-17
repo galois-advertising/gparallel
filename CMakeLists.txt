@@ -40,8 +40,9 @@ ADD_EXECUTABLE(gparallel_test
 "${PROJECT_SOURCE_DIR}/test/test_type_id.cpp" 
 "${PROJECT_SOURCE_DIR}/test/test_node.cpp" 
 "${PROJECT_SOURCE_DIR}/test/test_register_node.cpp" 
-"${PROJECT_SOURCE_DIR}/src/node_container.cpp" 
+"${PROJECT_SOURCE_DIR}/src/dag_schema.cpp" 
 "${PROJECT_SOURCE_DIR}/src/node_info.cpp" 
+"${PROJECT_SOURCE_DIR}/src/debug.cpp" 
 "${PROJECT_SOURCE_DIR}/common/util/src/log.cpp" 
 )
 TARGET_LINK_LIBRARIES(gparallel_test ${GTEST_BOTH_LIBRARIES} boost_log-mt)

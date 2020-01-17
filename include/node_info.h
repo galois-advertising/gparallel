@@ -38,7 +38,6 @@ public:
 
 //private:
     friend class node;
-    friend class node_container;
 
     bool _has_item_input;
     batch_function_type _batch_fn;
