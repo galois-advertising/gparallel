@@ -30,7 +30,7 @@ node_schema::node_schema() {
     _batch_fn = nullptr;
     _query_fn = nullptr;
     _end_fn = nullptr;
-    _node_user_id = 0;
+    //_node_user_id = 0;
     _deps_count = 0;
 }
 
@@ -46,7 +46,7 @@ void node_schema::initialize(
     _batch_fn = batch_fn;
     _query_fn = query_fn;
     _end_fn = end_fn;
-    _has_item_input = (io.input.size() > 0);
+    //_has_item_input = (io.input.size() > 0);
 
     auto fill_meta = [](const node_io_map & s, node_io_vec & d) {
         d.reserve(s.size());
@@ -94,6 +94,22 @@ size_t node_schema::query_node_out_size() const {
 
 int node_schema::node_id() const {
     return _node_id;
+}
+
+const std::set<node_schema_ptr> & node_schema::input_nodes() const {
+    return _input_nodes;
+}
+
+std::set<node_schema_ptr> & node_schema::mutable_input_nodes() {
+    return _input_nodes;
+}
+
+const std::set<node_schema_ptr> & node_schema::output_nodes() const {
+    return _output_nodes;
+}
+
+std::set<node_schema_ptr> & node_schema::mutable_output_nodes() {
+    return _output_nodes;
 }
 
 }

@@ -27,6 +27,10 @@ public:
 
 public:
     // getter
+    const std::set<node_schema_ptr> & input_nodes() const;
+    std::set<node_schema_ptr> & mutable_input_nodes();
+    const std::set<node_schema_ptr> & output_nodes() const;
+    std::set<node_schema_ptr> & mutable_output_nodes();
     std::string name() const;
     int item_deps_count() const;
     int query_deps_count() const;
@@ -37,14 +41,13 @@ public:
     void graphviz(std::stringstream&) const;
 
 //private:
-    friend class node;
 
-    bool _has_item_input;
+    //bool _has_item_input;
     batch_function_type _batch_fn;
     query_function_type _query_fn;
     end_function_type _end_fn;
     id_t _node_id;
-    int _node_user_id;
+    //int _node_user_id;
     int _deps_count;
     std::string _name;
 

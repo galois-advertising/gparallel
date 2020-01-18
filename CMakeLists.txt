@@ -41,9 +41,9 @@ ADD_EXECUTABLE(gparallel_test
 "${PROJECT_SOURCE_DIR}/test/test_node.cpp" 
 "${PROJECT_SOURCE_DIR}/test/test_register_node.cpp" 
 "${PROJECT_SOURCE_DIR}/src/dag_schema.cpp" 
-"${PROJECT_SOURCE_DIR}/src/dag.cpp" 
+"${PROJECT_SOURCE_DIR}/src/dag_instance.cpp" 
 "${PROJECT_SOURCE_DIR}/src/node_schema.cpp" 
-"${PROJECT_SOURCE_DIR}/src/node.cpp" 
+"${PROJECT_SOURCE_DIR}/src/node_instance.cpp" 
 "${PROJECT_SOURCE_DIR}/src/debug.cpp" 
 "${PROJECT_SOURCE_DIR}/common/util/src/log.cpp" 
 )
