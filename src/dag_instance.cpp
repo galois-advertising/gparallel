@@ -1,6 +1,7 @@
 #include "dag_instance.h"
 #include "node_instance.h"
 #include <memory>
+#include "log.h"
 
 namespace galois::gparallel {
 dag_instance_ptr dag_instance::create(const dag_schema & schema) {
@@ -19,8 +20,12 @@ dag_instance::dag_instance(const dag_schema & schema) {
     }
     // 2. connect them
     for (auto node : nodes) {
-        for (auto schema : node->schema().output_nodes()) {
-            node->mutable_next_nodes().push_back(schema_2_instance[schema->node_id()]);
+        for (auto output_node_schema : node->schema().output_nodes()) {
+            auto itr = schema_2_instance.find(output_node_schema->node_id());
+            if (itr == schema_2_instance.end()) {
+                FATAL("there some error in connecting node_instances", "");
+            }
+            node->mutable_next_nodes().push_back(itr->second);
         }
     }
     

@@ -39,7 +39,7 @@ for (auto & a : _name) {\
 TEST(Test, deduce_depends) {
     using namespace galois::gparallel;
     io_description vec;
-    deduce_depends<auto_type, Process>::deduce(vec);
+    deduce_depends<Process>::deduce(vec);
     SHOW(vec.input);
     SHOW(vec.output);
     ASSERT_EQ(vec.input.size(), 3);

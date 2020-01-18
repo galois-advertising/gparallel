@@ -19,7 +19,7 @@ void register_node_operator(dag_schema & c)
     auto new_node = std::make_shared<node_schema>();
     c.push_back(new_node);
     io_description vec;
-    deduce_depends<auto_type, NT>::deduce(vec);
+    deduce_depends<NT>::deduce(vec);
     //_nodes.back()->initialize(strdup(name.c_str()), batch_fn, query_fn, end_fn, vec);
     c.back()->initialize(name, nullptr, nullptr, nullptr, vec);
 }

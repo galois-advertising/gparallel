@@ -51,7 +51,7 @@ struct parameter_traits< produce<M> > {
     }
 };
 
-template <class A, class NT>
+template <class A>
 void record_io(io_description & iodes) {
     if (parameter_traits<A>::ptype == parameter_type::NONE) {
         return;
@@ -121,7 +121,7 @@ struct pop_and_process_M<STACK, template_list<M, MS_dep ...>>
             demangle(typeid(M<none_type>).name()).c_str()
         );
 #endif
-        record_io<input<M>, P>(deps);
+        record_io<input<M>>(deps);
         push_next_M<pop_and_process_M<STACK, template_list<MS_dep ...>>, typename M<none_type>::meta_info>::template deduce<P>(deps);
     }
 };

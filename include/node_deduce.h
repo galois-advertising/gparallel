@@ -18,7 +18,8 @@ namespace galois::gparallel
 template <class A, class NT>
 struct deduce_op {
     static void deduce(io_description & iodes) {
-        record_io<A, NT>(iodes);
+        record_io<A>(iodes);
+        // for both input<M> or output<M>
         depth_first_search_of_meta<typename parameter_traits<A>::meta_info>::template deduce<NT>(iodes);
     }
 };
@@ -53,11 +54,9 @@ template <class NT, class R, class...AS>
 struct deduce_fn<NT, R(NT::*)(AS...)> : 
     public deduce_arg<NT, AS...> {};
 
-template <class tag, class NT>
-struct deduce_depends{};
-
+// start from here
 template <class NT>
-struct deduce_depends<auto_type, NT> {
+struct deduce_depends {
     static void deduce(io_description & vec) {
         deduce_fn<NT, decltype(&NT::process)>::deduce(vec);
     }
