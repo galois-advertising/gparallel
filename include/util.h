@@ -1,3 +1,4 @@
+// solopointer1202@gmail.com
 #pragma once
 #include <map>
 #include <vector>
@@ -17,15 +18,6 @@ struct auto_type {};
 
 
 std::string demangle(const char* name);
-enum LOG_LEVEL {
-    FATAL,
-    ERROR,
-    WARNING,
-    INFO,
-    DEBUG,
-    TRACE
-};
-void log(LOG_LEVEL loglevel, const char * fmt, ...);
 
 enum class parameter_type {
     NONE = 0, INPUT, OUTPUT, SOUT, PRODUCE, LIST_VIEW
@@ -50,7 +42,6 @@ struct io_description {
 template <class D, template <class> class... MS> struct meta_info_list {};
 template <template <class> class... TMPS> struct template_list {};
 template <class... TS> struct type_list {};
-std::string demangle(const char* name);
 
 template <class T>
 std::string type(const T& t) {
@@ -79,21 +70,5 @@ class node;
 typedef void(*batch_function_type)(node&);
 typedef void(*query_function_type)(node&);
 typedef void(*end_function_type)(node&);
-
-//template <class P, class... AS>
-//struct process_traits_imp{
-    //typedef varlist<typename parameter_traits<AS>::LocalTp...> list;
-//};
-//template <class P, class F>
-//struct ProcTraits {};
-//
-//template <class P, class R, class... AS>
-//struct process_traits_helper<P, R(*)(AS...)> : public process_traits_imp<P, AS...> {};
-//
-//template <class P, class R, class...AS>
-//struct process_traits_helper<P, R(P::*)(AS...)> : public process_traits_imp<P, AS...> {};
-//
-//template <class P>
-//struct process_traits : public process_traits_helper<P, decltype(&P::process)> {};
 
 }

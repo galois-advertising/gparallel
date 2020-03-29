@@ -1,17 +1,21 @@
+// solopointer1202@gmail.com
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 #include <map>
 #include <set>
-#include <sstream>
-#include <boost/log/trivial.hpp>
-#include "node_container.h"
+#include "dag_schema.h"
 #include "type_id.h"
+#include "log.h"
 #include "util.h"
-#include <regex>
+#include "debug.h"
 
 
 namespace galois::gparallel
 {
+
+typedef std::map< id_t, std::vector<node_schema_ptr> > meta_to_nodevec_t;
+typedef std::map< id_t, node_schema_ptr > meta_to_node_t;
 
 void operator += (id_set_t & i, const id_set_t & other)
 {
@@ -49,63 +53,10 @@ void operator += (id_set_t & i, const node_io_vec & other)
         [](auto o){return o.id;});
 }
 
-static node_info * const PRODUCE_MARK = reinterpret_cast<node_info*>(0x1);
-static node_info * const SOUT_MARK = reinterpret_cast<node_info*>(0x2);
+static node_schema * const PRODUCE_MARK = reinterpret_cast<node_schema*>(0x1);
+static node_schema * const SOUT_MARK = reinterpret_cast<node_schema*>(0x2);
 
-
-void node_container::show_meta_depends_graphviz(
-    topology_t & meta_transitive_closure,
-    std::string tag)
-{
-    std::stringstream meta_depends_log;
-    meta_depends_log<<"\ndigraph "<<tag<<"{\n";
-    meta_depends_log<<"rankdir=BT;\n";
-    meta_depends_log<<"size=\"8,5\";\n";
-    for (auto & p : meta_transitive_closure) {
-        std::cout<<typeid_manager<none_type>::instance().name(p.first)<<std::endl;;
-        for (auto id : p.second) {
-                meta_depends_log<<"\""<<typeid_manager<none_type>::instance().name(p.first)
-                <<"\" -> \""<<typeid_manager<none_type>::instance().name(id)<<"\""<<";"<<std::endl;
-        }
-    }
-    meta_depends_log<<"}";
-    auto log = meta_depends_log.str();
-    std::regex re("galois::gparallel::none_type, |galois::gparallel::meta_info_list");
-    BOOST_LOG_TRIVIAL(warning) <<tag<<std::endl<<"http://graphviz.it/#" <<std::endl<<std::regex_replace(log, re, "");
-
-}
-
-void node_container::show_node_depends_graphviz(std::string tag)
-{
-    std::stringstream node_depends_log;
-    node_depends_log<<"\ndigraph "<<tag<<"{\n";
-    node_depends_log<<"rankdir=BT;\n";
-    node_depends_log<<"size=\"8,5\";\n";
-    for (auto node : _nodes) {
-        node->graphviz(node_depends_log);
-    }
-    node_depends_log<<"}";
-    auto log = node_depends_log.str();
-    std::regex re("galois::gparallel::none_type, |galois::gparallel::meta_info_list");
-    BOOST_LOG_TRIVIAL(warning) <<tag<<std::endl<<"http://graphviz.it/#" <<std::endl<<std::regex_replace(log, re, "");
-
-}
-
-bool node_container::graphviz(topology_t & target, std::stringstream & ss, std::string tag)
-{
-    ss<<"digraph "<<tag<<"{"<<std::endl;
-    ss<<"rankdir=BT;"<<std::endl;
-    ss<<"size=\"8,5\";"<<std::endl;
-    for (auto & [output, input_set] : target) {
-        for (auto input : input_set) {
-                ss<<"\""<<output<<"\" -> \""<<input<<"\""<<";"<<std::endl;
-        }
-    }
-    ss<<"}";
-    return true;
-}
-
-bool node_container::transitive_closure(topology_t & implies)
+bool transitive_closure(topology_t & implies)
 {
     bool has_change = true;
     while (has_change) {
@@ -130,7 +81,7 @@ bool node_container::transitive_closure(topology_t & implies)
 
 }
 
-bool node_container::build_meta_topology(topology_t & me) {
+bool build_meta_topology(const dag_schema & _nodes, topology_t & me) {
     for (auto node : _nodes) {
         for (auto out : node->_output_metas) {
             std::transform(node->_input_metas.begin(), node->_input_metas.end(),
@@ -141,7 +92,7 @@ bool node_container::build_meta_topology(topology_t & me) {
     return true;
 }
 
-bool node_container::build_node_topology(topology_t & me) {
+bool build_node_topology(const dag_schema & _nodes, topology_t & me) {
     for (auto node : _nodes) {
         for (const auto & node_out : node->_output_nodes) {
             me[node_out->node_id()].insert(node->node_id());
@@ -150,11 +101,11 @@ bool node_container::build_node_topology(topology_t & me) {
     return true;
 }
 
-bool if_node_in(node_ptr node, std::set<node_ptr> & vec) {
+bool if_node_in(node_schema_ptr node, std::set<node_schema_ptr> & vec) {
     return std::find(vec.begin(), vec.end(), node) != vec.end();
 }
 
-bool node_container::init()
+bool setup_dag_schema(dag_schema & _nodes)
 {
     if (auto pos = std::find_if(_nodes.begin(), _nodes.end(), [](auto ptr){
         size_t query_meta_cnt = 0;
@@ -168,7 +119,7 @@ bool node_container::init()
         }
         return item_meta_cnt > 0 && query_meta_cnt > 0;
     }); pos != _nodes.end()) {
-        //log(FATAL, "can not process both query and item:%s", (*pos)->name().c_str());
+        FATAL("can not process both query and item:%s", (*pos)->name().c_str());
         return false;
     }
     meta_to_nodevec_t produce2nodevec;
@@ -180,7 +131,7 @@ bool node_container::init()
             switch (meta.type) {
             case parameter_type::OUTPUT:
                 if (output2node.count(meta.id) != 0) {
-                    log(FATAL, "%s output fail: node[%s] already output meta[%s]",
+                    FATAL("%s output fail: node[%s] already output meta[%s]",
                         node->name().c_str(), output2node[meta.id]->name().c_str(), 
                         typeid_manager<none_type>::instance().name(meta.id).c_str());
                     return false;
@@ -189,18 +140,18 @@ bool node_container::init()
                 break;
             case parameter_type::SOUT:
                 output2node[meta.id] = 
-                    node_ptr(reinterpret_cast<node_info*>(SOUT_MARK), [](auto){});
+                    node_schema_ptr(reinterpret_cast<node_schema*>(SOUT_MARK), [](auto){});
                 sout2nodevec[meta.id].push_back(node);
                 break;
             case parameter_type::PRODUCE:
                 output2node[meta.id] = 
-                    node_ptr(reinterpret_cast<node_info*>(PRODUCE_MARK), [](auto){});
+                    node_schema_ptr(reinterpret_cast<node_schema*>(PRODUCE_MARK), [](auto){});
                 produce2nodevec[meta.id].push_back(node);
                 break;
             case parameter_type::INPUT:
             case parameter_type::NONE:
             default:
-                log(FATAL, "should not be here");
+                FATAL("should not be here", "");
                 break;
             }
         }
@@ -208,11 +159,11 @@ bool node_container::init()
 
 
     topology_t meta_transitive_closure;
-    if (build_meta_topology(meta_transitive_closure)) {
+    if (build_meta_topology(_nodes, meta_transitive_closure)) {
         if (transitive_closure(meta_transitive_closure)) {
-            show_meta_depends_graphviz(meta_transitive_closure, "meta_transitive_closure");
+            debug::show_meta_depends_graphviz(meta_transitive_closure, "meta_transitive_closure");
         } else {
-            log(FATAL, "transitive_closure(meta_transitive_closure) fail");
+            FATAL("transitive_closure(meta_transitive_closure) fail", "");
             return false;
         } 
     }
@@ -277,11 +228,11 @@ bool node_container::init()
         };
         link_node_by_meta();
     }
-    show_node_depends_graphviz("node_depends");
+    debug::show_node_depends_graphviz(_nodes, "node_depends");
     topology_t node_implies;
-    build_node_topology(node_implies);
+    build_node_topology(_nodes, node_implies);
     if (!transitive_closure(node_implies)) {
-        BOOST_LOG_TRIVIAL(fatal) << "node: transitive_closure fail.";
+        FATAL("node: transitive_closure fail.", "");
         return false;
     }
     for (auto node : _nodes) {
@@ -312,7 +263,7 @@ bool node_container::init()
             node->_deps_count -= 1;
         }
     }
-    show_node_depends_graphviz("node_depends_after");
+    debug::show_node_depends_graphviz(_nodes, "node_depends_after");
     return true;
 }  
 

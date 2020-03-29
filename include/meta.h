@@ -1,5 +1,7 @@
+// solopointer1202@gmail.com
 #pragma once
 #include "util.h"
+#include "log.h"
 
 namespace galois::gparallel {
 // T: Data meta imp
@@ -29,7 +31,7 @@ struct meta_storage {
     meta_storage() = delete;
     template <class U>
     meta_storage(const U & u) : data(u) {
-        log(INFO, "[ENTRY] meta_storage<%d, %s>::meta_storage<%s>()",
+        INFO("[ENTRY] meta_storage<%d, %s>::meta_storage<%s>()",
             I, demangle(typeid(T).name()).c_str(), demangle(typeid(U).name()).c_str());
     }
     T data;

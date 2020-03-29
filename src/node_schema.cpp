@@ -1,7 +1,7 @@
+// solopointer1202@gmail.com
 #include <algorithm>
 #include "util.h"
-#include "node_info.h"
-
+#include "node_schema.h"
 
 namespace galois::gparallel {
 
@@ -24,19 +24,18 @@ node_io_vec operator + (node_io_vec & a, const node_io_vec & b)
     return std::move(res);
 }
 
-node_info::node_info() {
+node_schema::node_schema() {
     static int g_node_id = 0;
     _node_id = g_node_id++;
     _batch_fn = nullptr;
     _query_fn = nullptr;
     _end_fn = nullptr;
-    _node_user_id = 0;
     _deps_count = 0;
 }
 
 
 
-void node_info::initialize(
+void node_schema::initialize(
         std::string name, 
         batch_function_type batch_fn, 
         query_function_type query_fn, 
@@ -46,7 +45,6 @@ void node_info::initialize(
     _batch_fn = batch_fn;
     _query_fn = query_fn;
     _end_fn = end_fn;
-    _has_item_input = (io.input.size() > 0);
 
     auto fill_meta = [](const node_io_map & s, node_io_vec & d) {
         d.reserve(s.size());
@@ -58,42 +56,58 @@ void node_info::initialize(
     fill_meta(io.output, _output_metas);
 }
 
-void node_info::graphviz(std::stringstream & out) const {
+void node_schema::graphviz(std::stringstream & out) const {
     for (auto node : _input_nodes) {
         out<<"\""<<name()<<"\" -> \""<<node->name()<<"\";"<<std::endl;
     }
 }
 
-void node_info::set_end(end_function_type end_fn) {
+void node_schema::set_end(end_function_type end_fn) {
     _end_fn = end_fn;
 }
 
-void node_info::describe() const {
+void node_schema::describe() const {
 
 }
 
-std::string node_info::name() const {
+std::string node_schema::name() const {
     return _name;
 }
 
-int node_info::item_deps_count() const {
+int node_schema::item_deps_count() const {
     return _deps_count;
 }
 
-size_t node_info::item_node_out_size() const {
+size_t node_schema::item_node_out_size() const {
     return _output_nodes.size();
 }
 
-int node_info::query_deps_count() const {
+int node_schema::query_deps_count() const {
     return _deps_count;
 }
 
-size_t node_info::query_node_out_size() const {
+size_t node_schema::query_node_out_size() const {
     return _output_nodes.size();
 }
 
-int node_info::node_id() const {
+int node_schema::node_id() const {
     return _node_id;
+}
+
+const std::set<node_schema_ptr> & node_schema::input_nodes() const {
+    return _input_nodes;
+}
+
+std::set<node_schema_ptr> & node_schema::mutable_input_nodes() {
+    return _input_nodes;
+}
+
+const std::set<node_schema_ptr> & node_schema::output_nodes() const {
+    return _output_nodes;
+}
+
+std::set<node_schema_ptr> & node_schema::mutable_output_nodes() {
+    return _output_nodes;
 }
 
 }

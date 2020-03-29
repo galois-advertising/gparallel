@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include "meta.h"
 #include "meta_decorator.h"
+#include "log.h"
 using namespace galois::gparallel;
 struct thread_data {
     int AAA_storage = 0;
@@ -26,32 +27,32 @@ struct thread_data {
     thread_data(int a) {}
 };
 
-DECL_META(AAA, thread_data){
+DECL_META(m_aaa, thread_data){
     const int & AAA_storage() const { return this->data->AAA_storage;}
 };
 
-DECL_META(AAB, thread_data){};
-DECL_META(AAC, thread_data){};
-DECL_META(AA, thread_data, AAA, AAB, AAC){};
+DECL_META(m_aab, thread_data){};
+DECL_META(m_aac, thread_data){};
+DECL_META(m_aa, thread_data, m_aaa, m_aab, m_aac){};
 
-DECL_META(ABA, thread_data){};
-DECL_META(ABB, thread_data){};
-DECL_META(ABC, thread_data){};
-DECL_META(AB, thread_data, ABA, ABB, ABC){};
+DECL_META(m_aba, thread_data){};
+DECL_META(m_abb, thread_data){};
+DECL_META(m_abc, thread_data){};
+DECL_META(m_ab, thread_data, m_aba, m_abb, m_abc){};
 
-DECL_META(ACA, thread_data){};
-DECL_META(ACB, thread_data){};
-DECL_META(ACC, thread_data){};
-DECL_META(AC, thread_data, ACA, ACB, ACC){};
+DECL_META(m_aca, thread_data){};
+DECL_META(m_acb, thread_data){};
+DECL_META(m_acc, thread_data){};
+DECL_META(m_ac, thread_data, m_aca, m_acb, m_acc){};
 
-DECL_META(A, thread_data, AA, AB, AC){};
+DECL_META(m_a, thread_data, m_aa, m_ab, m_ac){};
 
-TEST(Test, data_meta) {
+TEST(Test, meta_deduce) {
     using namespace galois::gparallel;
     io_description deps;
-    input_meta_imp<input<A>::meta_info>::deduce<none_type>(deps);
+    input<m_a>::input_imp::deduce<none_type>(deps);
     thread_data td(1);
-    input<A> input_a(&td);
+    input<m_a> input_a(&td);
 
-    //storage_helper<0, input<AA>, input<AB>, output<AC>> storage(a);
+    //storage_helper<0, input<m_aa>, input<m_ab>, output<m_ac>> storage(a);
 }

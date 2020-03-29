@@ -1,6 +1,10 @@
+// solopointer1202@gmail.com
 #pragma once
+#include "log.h"
 
 namespace galois::gparallel {
+
+std::string demangle(const char* name);
 
 template <template<class> class M> class input; 
 template <template<class> class M> class output;
@@ -48,8 +52,8 @@ struct parameter_traits< produce<M> > {
     }
 };
 
-template <class A, class NT>
-void push_io(io_description & iodes) {
+template <class A>
+void record_io(io_description & iodes) {
     if (parameter_traits<A>::ptype == parameter_type::NONE) {
         return;
     }
@@ -65,63 +69,79 @@ void push_io(io_description & iodes) {
         iodes.output[link.id] = link;
     }
 };
-template <class C, class... MS>
-struct input_meta_imp_op {};
-template <class C, class... MS>
-struct input_meta_imp_dd {};
+template <class STACK, class... MS>
+struct pop_and_process_M {};
+template <class STACK, class... MS>
+struct push_next_M {};
 
 
-// C: An abstract type, which story some info
+// STACK: An abstract stack type, which story some info for Depth-First-Search
 // D: Data type
 // M: Data meta type
 // MS_dep: The data meta types which depends it
 // template_list: a list of any template
 // meta_info_list: a special list for store <D, M, MS_dep ...>
 //
-// deducer<C, meta_info_list>
-template <class C, class D, template <class> class M, template <class> class... MS_dep>
-struct input_meta_imp_dd<C, meta_info_list<D, M, MS_dep ...>> 
-    : public input_meta_imp_op<C, template_list<MS_dep...>> 
+// deducer<STACK, meta_info_list>
+template <class STACK, class D, template <class> class M, template <class> class... MS_dep>
+struct push_next_M<STACK, meta_info_list<D, M, MS_dep ...>> 
+    : public pop_and_process_M<STACK, template_list<MS_dep...>> 
 {
     template <class P>
     static void deduce(io_description & deps) {
-        input_meta_imp_op<C, template_list<MS_dep...>>::template deduce<P>(deps);
+#ifdef _DEBUG
+        DEBUG("%s::deduce[normal]", demangle(typeid(push_next_M<STACK, meta_info_list<D, M, MS_dep ...>>).name()).c_str());
+#endif
+        pop_and_process_M<STACK, template_list<MS_dep...>>::template deduce<P>(deps);
     }
 };
 
 // end case
-template <class C>
-struct input_meta_imp_op<C, template_list<>> : public C {
+template <class STACK>
+struct pop_and_process_M<STACK, template_list<>> : public STACK {
     template <class P>
     static void deduce(io_description & deps) {
-        C::template deduce<P>(deps);
+#ifdef _DEBUG
+        DEBUG("%s::deduce[call stack::deduce]", 
+            demangle(typeid(pop_and_process_M<STACK, template_list<>>).name()).c_str());
+#endif
+        STACK::template deduce<P>(deps);
     }
 };
 
-// deducer<C, template_list>
-template <class C, template <class> class M, template <class> class... MS_dep>
-struct input_meta_imp_op<C, template_list<M, MS_dep ...>> 
-    : public M<input_meta_imp_dd<input_meta_imp_op<C, template_list<MS_dep ...>>, typename M<none_type>::meta_info>> 
+// deducer<STACK, template_list>
+template <class STACK, template <class> class M, template <class> class... MS_dep>
+struct pop_and_process_M<STACK, template_list<M, MS_dep ...>> 
+    : public M<push_next_M<pop_and_process_M<STACK, template_list<MS_dep ...>>, typename M<none_type>::meta_info>> 
 {
     template <class P>
     static void deduce(io_description & deps) {
-        push_io<input<M>, P>(deps);
-        input_meta_imp_dd<input_meta_imp_op<C, template_list<MS_dep ...>>, typename M<none_type>::meta_info>::template deduce<P>(deps);
+#ifdef _DEBUG
+        DEBUG("%s::deduce[record_io(%s)]", 
+            demangle(typeid(pop_and_process_M<STACK, template_list<M, MS_dep ...>>).name()).c_str(),
+            demangle(typeid(M<none_type>).name()).c_str()
+        );
+#endif
+        record_io<input<M>>(deps);
+        push_next_M<pop_and_process_M<STACK, template_list<MS_dep ...>>, typename M<none_type>::meta_info>::template deduce<P>(deps);
     }
 };
 
 // start
-template <class T> struct input_meta_imp {};
+template <class T> struct depth_first_search_of_meta {};
 template <class D, template <class> class M, template <class> class... MS_dep>
-struct input_meta_imp< meta_info_list<D, M, MS_dep ...> > 
-    : public M<input_meta_imp_op<storage_reference<D>, template_list<MS_dep ...>>> 
+struct depth_first_search_of_meta< meta_info_list<D, M, MS_dep ...> > 
+    : public M<pop_and_process_M<storage_reference<D>, template_list<MS_dep ...>>> 
 {
-    input_meta_imp(const D * data) {
+    depth_first_search_of_meta(const D * data) {
         this->reset(const_cast<D*>(data)); 
     }
     template <class P>
     static void deduce(io_description & deps) {
-        input_meta_imp_op<storage_reference<D>, template_list<MS_dep ...>>::template deduce<P>(deps);
+#ifdef _DEBUG
+        DEBUG("%s::deduce[start]", demangle(typeid(depth_first_search_of_meta< meta_info_list<D, M, MS_dep ...> >).name()).c_str());
+#endif
+        pop_and_process_M<storage_reference<D>, template_list<MS_dep ...>>::template deduce<P>(deps);
     };
 };
 
@@ -132,7 +152,7 @@ class input {
 public:
     typedef typename M<none_type>::meta_info meta_info;
     typedef typename M<none_type>::meta_storage data_meta_storage;
-    typedef input_meta_imp<meta_info> input_imp;
+    typedef depth_first_search_of_meta<meta_info> input_imp;
     input(const data_meta_storage * data) : _m(const_cast<data_meta_storage*>(data)) {}
     template <template <class> class AnyM>
     operator input<AnyM>() {

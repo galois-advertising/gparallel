@@ -5,7 +5,7 @@
 #include "node_deduce.h"
 #include "util.h"
 #include "meta.h"
-#include "node_container.h"
+#include "dag_schema.h"
 #include "type_id.h"
 using namespace galois::gparallel;
 
@@ -47,7 +47,7 @@ struct NodeE
 
 TEST(Test, register_node) {
     using namespace galois::gparallel;
-    node_container nodes;
+    dag_schema nodes;
     register_node<NodeA, NodeB, NodeC, NodeD, NodeE>::reg(nodes);
-    ASSERT_EQ(nodes.init(), true);
+    ASSERT_EQ(setup_dag_schema(nodes), true);
 }

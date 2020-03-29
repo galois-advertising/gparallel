@@ -17,6 +17,7 @@ MESSAGE(STATUS "Found Boost Libraries ${Boost_LIBRARIES}")
 
 ADD_DEFINITIONS(-DBOOST_SPIRIT_THREADSAFE)
 ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
+ADD_DEFINITIONS(-D_DEBUG)
 
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
@@ -24,6 +25,7 @@ LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include")
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/src")
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/")
+INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/common/util/include")
 
 ENABLE_TESTING()
 FIND_PACKAGE(GTest REQUIRED)
@@ -38,7 +40,11 @@ ADD_EXECUTABLE(gparallel_test
 "${PROJECT_SOURCE_DIR}/test/test_type_id.cpp" 
 "${PROJECT_SOURCE_DIR}/test/test_node.cpp" 
 "${PROJECT_SOURCE_DIR}/test/test_register_node.cpp" 
-"${PROJECT_SOURCE_DIR}/src/node_container.cpp" 
-"${PROJECT_SOURCE_DIR}/src/node_info.cpp" 
+"${PROJECT_SOURCE_DIR}/src/dag_schema.cpp" 
+"${PROJECT_SOURCE_DIR}/src/dag_instance.cpp" 
+"${PROJECT_SOURCE_DIR}/src/node_schema.cpp" 
+"${PROJECT_SOURCE_DIR}/src/node_instance.cpp" 
+"${PROJECT_SOURCE_DIR}/src/debug.cpp" 
+"${PROJECT_SOURCE_DIR}/common/util/src/log.cpp" 
 )
 TARGET_LINK_LIBRARIES(gparallel_test ${GTEST_BOTH_LIBRARIES} boost_log-mt)
