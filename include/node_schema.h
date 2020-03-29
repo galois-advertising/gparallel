@@ -1,5 +1,4 @@
 // solopointer1202@gmail.com
-// 220200114
 #pragma once
 #include <memory>
 #include <sstream>

@@ -1,4 +1,6 @@
+// solopointer1202@gmail.com
 #include "node_instance.h"
+
 namespace galois::gparallel {
 node_instance_ptr node_instance::create(const node_schema_cptr) {
     return std::make_shared<node_instance>();

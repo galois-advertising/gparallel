@@ -1,6 +1,7 @@
+// solopointer1202@gmail.com
+#include <memory>
 #include "dag_instance.h"
 #include "node_instance.h"
-#include <memory>
 #include "log.h"
 
 namespace galois::gparallel {

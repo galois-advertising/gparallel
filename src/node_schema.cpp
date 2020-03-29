@@ -1,7 +1,7 @@
+// solopointer1202@gmail.com
 #include <algorithm>
 #include "util.h"
 #include "node_schema.h"
-
 
 namespace galois::gparallel {
 
@@ -30,7 +30,6 @@ node_schema::node_schema() {
     _batch_fn = nullptr;
     _query_fn = nullptr;
     _end_fn = nullptr;
-    //_node_user_id = 0;
     _deps_count = 0;
 }
 
@@ -46,7 +45,6 @@ void node_schema::initialize(
     _batch_fn = batch_fn;
     _query_fn = query_fn;
     _end_fn = end_fn;
-    //_has_item_input = (io.input.size() > 0);
 
     auto fill_meta = [](const node_io_map & s, node_io_vec & d) {
         d.reserve(s.size());

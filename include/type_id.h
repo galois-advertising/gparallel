@@ -1,10 +1,10 @@
+// solopointer1202@gmail.com
 #pragma once
 #include <map>
 #include <set>
 #include <vector>
 #include <string>
 #include <memory>
-//#include "util.h"
 
 namespace galois::gparallel
 {
