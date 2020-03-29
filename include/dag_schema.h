@@ -13,6 +13,7 @@ namespace galois::gparallel
 typedef std::vector<node_schema_ptr> dag_schema;
 
 bool setup_dag_schema(dag_schema & _nodes);
+
 template <class NT>
 void register_node_operator(dag_schema & c)
 {
