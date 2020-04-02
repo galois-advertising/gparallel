@@ -157,7 +157,6 @@ bool setup_dag_schema(dag_schema & _nodes)
         }
     }
 
-
     topology_t meta_transitive_closure;
     if (build_meta_topology(_nodes, meta_transitive_closure)) {
         if (transitive_closure(meta_transitive_closure)) {
