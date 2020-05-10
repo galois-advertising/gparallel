@@ -22,7 +22,7 @@ DECL_META(MetaD, base) {};
 
 DECL_META(MetaE, base, MetaD) {};
 
-TEST(Test, register_node) {
+TEST(Test, varlist) {
     using namespace galois::gparallel;
     //varlist<0, MetaA<none_type>, MetaB<none_type>, MetaC<none_type>, MetaD<none_type>> list;
 
