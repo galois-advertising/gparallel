@@ -12,6 +12,8 @@ gparallel是一个针对逻辑比较复杂的信息检索系统而设计的并行任务调度框架。基于DAG(D
     - boost-v1.70
     - gtest-v1.10.0
 
+下载并编译test
+
 ```shell
 $ git clone git@github.com:galois-advertising/gparallel.git
 $ cd gparallel
@@ -21,6 +23,33 @@ $ cd build
 $ cmake ..
 $ make gparallel_test
 $ ./gparallel_test
+```
+
+将gparallel作为你项目的一部分
+
+```shell
+cd your-project
+git add submodule -b master https://github.com/galois-advertising/gparallel
+git add submodule -b master https://github.com/galois-advertising/common
+git add submodule https://github.com/google/googletest.git gtest
+cd gtest
+git checkout release-1.10.0
+git add gtest
+git commit -m "Add gparallel"
+```
+并且修改`CMakeLists.txt`，加入：
+```cmake
+INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/common/util/include")
+INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/gparallel/include")
+IF (NOT TARGET common)
+    ADD_SUBDIRECTORY(common)
+ENDIF()
+
+IF (NOT TARGET gparallel)
+    ADD_SUBDIRECTORY(gparallel)
+ENDIF()
+ADD_EXECUTABLE(your-bin ...)
+TARGET_LINK_LIBRARIES(your-bin common gparallel)
 ```
 
 # 背景介绍
