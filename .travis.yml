@@ -1,0 +1,56 @@
+sudo: required
+
+dist: xenial
+language: cpp
+# ref 1: https://github.com/google/re2
+matrix:
+  include:
+    
+    # Linux g++-7
+    - os: linux
+      compiler: g++
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    
+    # Linux g++-8
+    - os: linux
+      compiler: g++
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+
+    # Linux g++-9
+    - os: linux
+      compiler: g++
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-9
+      env:
+        - MATRIX_EVAL="CC=gcc-9 CXX=g++-9"
+
+# install cmake 3.10
+before_install:
+  - eval "${MATRIX_EVAL}"
+  - wget -O cmake.sh https://cmake.org/files/v3.10/cmake-3.10.0-rc1-Linux-x86_64.sh 
+  - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
+
+# Build steps
+script:
+  - mkdir build
+  - cd build
+  - cmake ../
+  - make 

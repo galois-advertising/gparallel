@@ -31,6 +31,10 @@ ENABLE_TESTING()
 FIND_PACKAGE(GTest REQUIRED)
 INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
 
+IF (NOT TARGET common)
+    ADD_SUBDIRECTORY(common)
+ENDIF()
+
 
 ADD_EXECUTABLE(gparallel_test
 "${PROJECT_SOURCE_DIR}/test/main.cpp" 
@@ -47,4 +51,4 @@ ADD_EXECUTABLE(gparallel_test
 "${PROJECT_SOURCE_DIR}/src/debug.cpp" 
 "${PROJECT_SOURCE_DIR}/common/util/src/log.cpp" 
 )
-TARGET_LINK_LIBRARIES(gparallel_test ${GTEST_BOTH_LIBRARIES} boost_log-mt)
+TARGET_LINK_LIBRARIES(gparallel_test ${GTEST_BOTH_LIBRARIES} common)
