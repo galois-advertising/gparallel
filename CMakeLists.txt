@@ -6,9 +6,6 @@ SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -std=c++2a -fno-str
 SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -std=c++2a -fno-strict-aliasing -Wno-register -Wno-pessimizing-move")
 SET(CMAKE_BUILD_TYPE "Release")
 
-execute_process(
-    COMMAND cd ../gtest ; ${GIT_EXECUTABLE} checkout release-1.10.0)
-
 # boost
 FIND_PACKAGE(Boost REQUIRED COMPONENTS log)
 IF(NOT Boost_FOUND)
@@ -28,7 +25,6 @@ ENABLE_TESTING()
 INCLUDE_DIRECTORIES(SYSTEM
     ${gtest_SOURCE_DIR}
     ${gtest_SOURCE_DIR}/include)
-
 
 # common
 IF (NOT TARGET common)
