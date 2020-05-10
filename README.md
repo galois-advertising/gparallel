@@ -1,4 +1,4 @@
-# gParallel <img align="right" src="./image/logo.png">
+# gParallel <img align="right" width="30%" src="./image/logo.png">
 
 
 gparallel是一个针对逻辑比较复杂的信息检索系统而设计的并行任务调度框架。
