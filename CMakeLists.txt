@@ -6,14 +6,11 @@ SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -std=c++2a -fno-str
 SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -std=c++2a -fno-strict-aliasing -Wno-register -Wno-pessimizing-move")
 SET(CMAKE_BUILD_TYPE "Release")
 
+# boost
 FIND_PACKAGE(Boost REQUIRED COMPONENTS log)
 IF(NOT Boost_FOUND)
     MESSAGE("Can not find Boost")
 ENDIF()
-MESSAGE(STATUS "Found Boost IncPath ${Boost_INCLUDE_DIRS}")
-MESSAGE(STATUS "Found Boost LibPath ${Boost_LIBRARY_DIRS}")
-MESSAGE(STATUS "Found Boost Libraries ${Boost_LIBRARIES}")
-
 
 ADD_DEFINITIONS(-DBOOST_SPIRIT_THREADSAFE)
 ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
@@ -22,29 +19,26 @@ ADD_DEFINITIONS(-D_DEBUG)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
 
+# gtest
+IF (NOT TARGET gtest)
+    ADD_SUBDIRECTORY(gtest)
+    ENABLE_TESTING()
+    INCLUDE_DIRECTORIES(SYSTEM
+        ${gtest_SOURCE_DIR}
+        ${gtest_SOURCE_DIR}/include)
+ENDIF()
+
+# common
+IF (NOT TARGET common)
+    ADD_SUBDIRECTORY(common)
+ENDIF()
+
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include")
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/src")
-INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/")
-INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/common/util/include")
-
-ENABLE_TESTING()
-FIND_PACKAGE(GTest REQUIRED)
-INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
-
-
-ADD_EXECUTABLE(gparallel_test
-"${PROJECT_SOURCE_DIR}/test/main.cpp" 
-"${PROJECT_SOURCE_DIR}/src/util.cpp" 
-"${PROJECT_SOURCE_DIR}/test/test_invoke_ex.cpp" 
-"${PROJECT_SOURCE_DIR}/test/test_data_meta.cpp" 
-"${PROJECT_SOURCE_DIR}/test/test_type_id.cpp" 
-"${PROJECT_SOURCE_DIR}/test/test_node.cpp" 
-"${PROJECT_SOURCE_DIR}/test/test_register_node.cpp" 
-"${PROJECT_SOURCE_DIR}/src/dag_schema.cpp" 
-"${PROJECT_SOURCE_DIR}/src/dag_instance.cpp" 
-"${PROJECT_SOURCE_DIR}/src/node_schema.cpp" 
-"${PROJECT_SOURCE_DIR}/src/node_instance.cpp" 
-"${PROJECT_SOURCE_DIR}/src/debug.cpp" 
-"${PROJECT_SOURCE_DIR}/common/util/src/log.cpp" 
+INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/common/util/include")
+# gparallel_test
+file(GLOB gparallel_test_srcs "${PROJECT_SOURCE_DIR}/test/*.cpp"
+"${PROJECT_SOURCE_DIR}/src/*.cpp"
 )
-TARGET_LINK_LIBRARIES(gparallel_test ${GTEST_BOTH_LIBRARIES} boost_log-mt)
+ADD_EXECUTABLE(gparallel_test ${gparallel_test_srcs})
+TARGET_LINK_LIBRARIES(gparallel_test gtest common)
