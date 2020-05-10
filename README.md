@@ -1,8 +1,5 @@
-gParallel
+# gParallel <img align="right" src="./image/gparallel.jpg">
 
-![gParallel](./image/gparallel.jpg)
-
-# gparallel是什么
 
 gparallel是一个针对逻辑比较复杂的信息检索系统而设计的并行任务调度框架。
 
