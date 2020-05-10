@@ -6,6 +6,10 @@ SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -std=c++2a -fno-str
 SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -std=c++2a -fno-strict-aliasing -Wno-register -Wno-pessimizing-move")
 SET(CMAKE_BUILD_TYPE "Release")
 
+execute_process(
+    COMMAND cd ../gtest ; ${GIT_EXECUTABLE} checkout release-1.10.0)
+
+# boost
 FIND_PACKAGE(Boost REQUIRED COMPONENTS log)
 IF(NOT Boost_FOUND)
     MESSAGE("Can not find Boost")
@@ -18,11 +22,15 @@ ADD_DEFINITIONS(-D_DEBUG)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
 
-
+# gtest
+ADD_SUBDIRECTORY(gtest)
 ENABLE_TESTING()
-FIND_PACKAGE(GTest REQUIRED)
-INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(SYSTEM
+    ${gtest_SOURCE_DIR}
+    ${gtest_SOURCE_DIR}/include)
 
+
+# common
 IF (NOT TARGET common)
     ADD_SUBDIRECTORY(common)
 ENDIF()
@@ -30,9 +38,9 @@ ENDIF()
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include")
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/src")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/common/util/include")
-
+# gparallel_test
 file(GLOB gparallel_test_srcs "${PROJECT_SOURCE_DIR}/test/*.cpp"
 "${PROJECT_SOURCE_DIR}/src/*.cpp"
 )
 ADD_EXECUTABLE(gparallel_test ${gparallel_test_srcs})
-TARGET_LINK_LIBRARIES(gparallel_test ${GTEST_BOTH_LIBRARIES} common)
+TARGET_LINK_LIBRARIES(gparallel_test gtest common)

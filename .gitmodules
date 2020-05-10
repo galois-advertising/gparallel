@@ -2,3 +2,6 @@
 	path = common
 	url = https://github.com/galois-advertising/common
 	branch = master
+[submodule "gtest"]
+	path = gtest
+	url = https://github.com/google/googletest.git
