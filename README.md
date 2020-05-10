@@ -3,12 +3,29 @@
 [![Build Status](https://www.travis-ci.org/galois-advertising/gparallel.svg?branch=master)](https://www.travis-ci.org/galois-advertising/gparallel)
 
 
-gparallel是一个针对逻辑比较复杂的信息检索系统而设计的并行任务调度框架。
+gparallel是一个针对逻辑比较复杂的信息检索系统而设计的并行任务调度框架。基于DAG(Directed acyclic graph)进行并行任务调度，且自动根据任务的输入和输出推导依赖关系。
 
+# Quick start
 
-# 为什么需要gparallel
+* 编译依赖
+    - g++8
+    - boost-v1.70
+    - gtest-v1.10.0
 
-在系统建立初期，系统业务还比较简单，每次`检索请求`到来时需要执行的业务逻辑也比较单一，此时请求级别的`数据变量`比较少，这些变量的赋值顺序与依赖关系也一目了然，整个数据检索是一个完全线性的一个过程，没有任何`异步操作`。
+```shell
+$ git clone git@github.com:galois-advertising/gparallel.git
+$ cd gparallel
+$ git submodule update --init --recursive
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make gparallel_test
+$ ./gparallel_test
+```
+
+# 背景介绍
+
+对于单体型业务系统，在系统建立初期，系统业务还比较简单，每次`检索请求`到来时需要执行的业务逻辑也比较单一，此时请求级别的`数据变量`比较少，这些变量的赋值顺序与依赖关系也一目了然，整个数据检索是一个完全线性的一个过程，没有任何`异步操作`。
 
 但是，随着开发的人越来越多，大家都在上面加入自己的`业务逻辑`和新的`数据变量`，此时变量增加到了几十个，变量之间的赋值顺序与依赖关系开始变得复杂，一些代码逻辑已经不那么好理解，于此同时因为增加了`外部功能`调用，所以运行出现了大量`同步等待`，系统`平响`开始上升。面对这种情况，代码的管理者强制要求CI人员一定要添加足够的注释以便后面的开发人员能够明白代码和数据之间运行的逻辑。
 
