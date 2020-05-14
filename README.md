@@ -60,6 +60,38 @@ TARGET_LINK_LIBRARIES(your-bin common gparallel)
 
 每次新的开发都如履薄冰，每次排查问题都耗时耗力。这就是笔者所在公司的系统现状，500人参与开发，百万行代码，天级别的迭代更新。作为最复杂的在线广告系统之一，如何组织繁杂的业务逻辑，如何存放各类型的数据，这就是为什么需要gparallel.
 
+DAG在任务调度领域被广泛应用，开源社区的DAG-based调度框架也不胜枚举。其中几乎所有框架都采用了配置的方式生成调度DAG图，例如比较常见的[cpp-taskflow](https://github.com/cpp-taskflow/cpp-taskflow)。
+
+```cpp
+#include <taskflow/taskflow.hpp>  // Cpp-Taskflow is header-only
+
+int main(){
+  
+  tf::Executor executor;
+  tf::Taskflow taskflow;
+
+  auto [A, B, C, D] = taskflow.emplace(
+    [] () { std::cout << "TaskA\n"; },               //  task dependency graph
+    [] () { std::cout << "TaskB\n"; },               // 
+    [] () { std::cout << "TaskC\n"; },               //          +---+          
+    [] () { std::cout << "TaskD\n"; }                //    +---->| B |-----+   
+  );                                                 //    |     +---+     |
+                                                     //  +---+           +-v-+ 
+  A.precede(B);  // A runs before B                  //  | A |           | D | 
+  A.precede(C);  // A runs before C                  //  +---+           +-^-+ 
+  B.precede(D);  // B runs before D                  //    |     +---+     |    
+  C.precede(D);  // C runs before D                  //    +---->| C |-----+    
+                                                     //          +---+          
+  executor.run(taskflow).wait();
+
+  return 0;
+}
+```
+
+上面代码中想要生成预期的DAG图需要人工显式定义每两个节点之间的依赖关系，这种方式的有点是理解比较直观，但是缺点也很明显：
+* 在有大量任务的时候，人工定于DAG图比较困难并且容易出错
+* 工业环境中很多业务，并不是以任务驱动，而是以数据驱动，需要花费大量时间来梳理数据之间的依赖，从而转化为任务驱动
+
 # gparallel如何解决问题
 
 gparallel的主要思想有3个：

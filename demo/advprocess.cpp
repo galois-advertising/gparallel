@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "meta.h"
+#include "gparallel.h"
 using namespace galois::gparallel;
 
 class advertisement {
@@ -9,7 +9,7 @@ public:
     uint64_t id;
     double ctr;
     double cpm;
-}
+};
 
 using advlist_t = std::vector<advertisement>;
 using ctr_response_t = std::vector<double>;
@@ -26,19 +26,19 @@ public:
 
 DECL_META(original, thread_data) {
     advlist_t & mutable_advs_original() {
-        return advs_original;
+        return this->data->advs_original;
     }
 };
 
 DECL_META(ctr, thread_data, original) {
     ctr_response_t & mutable_ctr_data() {
-        return ctr_data;
+        return this->data->ctr_data;
     }
 };
 
 DECL_META(cpm, thread_data, original) {
     cpm_response_t & mutable_cpm_data() {
-        return cpm_data;
+        return this->data->cpm_data;
     }
 };
 
@@ -46,19 +46,21 @@ DECL_META(original_with_ctr_cpm, thread_data, original) {};
 
 DECL_META(ctr_ordered_advlist, thread_data) {
     advlist_t & mutable_advs_ctr_ordered() {
-        return advs_ctr_ordered;
+        return this->data->advs_ctr_ordered;
     }
 };
 
 DECL_META(cpm_ordered_advlist, thread_data) {
     advlist_t & mutable_advs_cpm_ordered() {
-        return advs_cpm_ordered;
+        return this->data->advs_cpm_ordered;
     }
 };
 
 
 struct get_ctr_node {
     void process(input<original> ori, output<ctr> ctr) {
+        ctr.resize(ori->mutable_advs_original().size());
+
 
     }
 };
@@ -96,9 +98,11 @@ struct end_node {
 };
 
 int main() {
+    thread_data td;
     dag_schema nodes;
     register_node<get_ctr_node, get_cpm_node>::reg(nodes);
     register_node<fill_node>::reg(nodes);
     register_node<gen_ctr_node, gen_cpm_node, end_node>::reg(nodes);
+    setup_dag_schema(nodes);
     return 0;
 }
