@@ -39,18 +39,18 @@ struct parameter_traits< output<M> > {
     }
 };
 
-template <template <class> class M>
-struct parameter_traits< produce<M> > {
-    typedef type_id<typename M<none_type>::meta_info, none_type> node_meta_id;
-    typedef typename M<none_type>::meta_info meta_info;
-    static const parameter_type ptype = parameter_type::PRODUCE;
-    static int id() {
-        return node_meta_id::instance().id();
-    }
-    static const char* name() {
-        return node_meta_id::instance().name();
-    }
-};
+//template <template <class> class M>
+//struct parameter_traits< produce<M> > {
+//    typedef type_id<typename M<none_type>::meta_info, none_type> node_meta_id;
+//    typedef typename M<none_type>::meta_info meta_info;
+//    static const parameter_type ptype = parameter_type::PRODUCE;
+//    static int id() {
+//        return node_meta_id::instance().id();
+//    }
+//    static const char* name() {
+//        return node_meta_id::instance().name();
+//    }
+//};
 
 template <class A, class NT>
 void record_input_output(io_description & iodes) {
@@ -169,11 +169,12 @@ class output {
 public:
     typedef typename M<none_type>::meta_info meta_info;
     typedef typename M<none_type>::meta_storage_t meta_storage_t;
-    typedef M<storage_reference<meta_storage_t>> * meta_imp_type;
+    //typedef M<storage_reference<meta_storage_t>> * meta_imp_type;
+    typedef meta_storage_t* meta_imp_type;
 
-    struct output_storage_t : public M<storage_reference<meta_storage_t>> {
-        output_storage_t (meta_storage_t * data) { this->reset(data); }
-    };
+    //struct output_storage_t : public M<storage_reference<meta_storage_t>> {
+    //    output_storage_t (meta_storage_t * data) { this->reset(data); }
+    //};
 
     output(meta_imp_type v) : _v(v) {}
     meta_imp_type operator->() {

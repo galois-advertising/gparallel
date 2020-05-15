@@ -20,7 +20,7 @@ struct auto_type {};
 std::string demangle(const char* name);
 
 enum class parameter_type {
-    NONE = 0, INPUT, OUTPUT, SOUT, PRODUCE, LIST_VIEW
+    NONE = 0, INPUT, OUTPUT
 };
 
 enum class meta_level_t {
@@ -68,8 +68,6 @@ private:
 };
 
 class node;
-typedef void(*batch_function_type)(node&);
 typedef void(*query_function_type)(node&);
-typedef void(*end_function_type)(node&);
 
 }
