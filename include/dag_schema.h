@@ -2,7 +2,10 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <list>
 #include <memory>
+#include <algorithm>
+#include <optional>
 #include "node_deduce.h"
 #include "node_schema.h"
 #include "util.h"
@@ -10,13 +13,13 @@
 
 namespace galois::gparallel
 {
-typedef std::vector<node_schema_ptr> dag_schema;
+typedef std::list<node_schema_ptr> dag_schema;
+std::optional<dag_schema> topological_sort(const dag_schema& const_dag);
 
 bool setup_dag_schema(dag_schema & _nodes);
 
 template <class NT>
-void register_node_operator(dag_schema & c)
-{
+void register_node_operator(dag_schema & c) {
     std::string name = demangle(typeid(NT).name());
     auto new_node = std::make_shared<node_schema>();
     c.push_back(new_node);

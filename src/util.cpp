@@ -5,8 +5,7 @@
 #include <memory>
 #include "util.h"
 
-namespace galois::gparallel 
-{
+namespace galois::gparallel {
 #ifdef __GNUG__
 #include <cstdlib>
 #include <cxxabi.h>
@@ -26,5 +25,6 @@ std::string demangle(const char* name) {
     return name;
 }
 #endif
+
 
 }

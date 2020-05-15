@@ -23,7 +23,10 @@ public:
 public:
     // setter
     void set_end(end_function_type end_fn);
-
+public: 
+    bool delete_input_nodes(node_schema_ptr node) {
+        return mutable_input_nodes().erase(node) > 0;
+    }
 public:
     // getter
     const std::set<node_schema_ptr> & input_nodes() const;

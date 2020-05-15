@@ -101,5 +101,10 @@ int main() {
     register_node<fill_node>::reg(nodes);
     register_node<gen_ctr_node, gen_cpm_node, end_node>::reg(nodes);
     setup_dag_schema(nodes);
+    if (auto tasks = topological_sort(nodes); tasks) {
+        for (auto task : tasks.value()) {
+            INFO("Execute[%s]", task->name().c_str());
+        }
+    }
     return 0;
 }
