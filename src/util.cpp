@@ -2,8 +2,10 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <memory>
 #include "util.h"
+#include "type_id.h"
 
 namespace galois::gparallel {
 #ifdef __GNUG__
@@ -25,6 +27,5 @@ std::string demangle(const char* name) {
     return name;
 }
 #endif
-
 
 }

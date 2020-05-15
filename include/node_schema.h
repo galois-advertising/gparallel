@@ -10,20 +10,8 @@ inline void data_link_map_to_vec(const node_io_map & map, node_io_vec & vec) {
         vec.push_back(it.second);
     }
 }
-
-void operator += (node_io_vec & i, const node_io_vec & other)
-{
-    i.insert(i.end(), other.begin(), other.end());
-}
-
-node_io_vec operator + (node_io_vec & a, const node_io_vec & b)
-{
-    node_io_vec res;
-    res += a;
-    res += b;
-    return std::move(res);
-}
-
+void operator += (node_io_vec & i, const node_io_vec & other);
+node_io_vec operator + (node_io_vec & a, const node_io_vec & b);
 typedef int id_t;
 class node;
 template<class meta_storage_t>
@@ -69,6 +57,16 @@ public:
 
 public:
     // getter
+
+    node_io_vec& mutable_input_metas() {
+        return _input_metas;
+
+    }
+
+    node_io_vec& mutable_output_metas() {
+        return _output_metas;
+
+    }
     const std::set<node_schema_ptr_t> & input_nodes() const {
         return _input_nodes;
     }
@@ -89,20 +87,12 @@ public:
         return _name;
     }
 
-    int item_deps_count() const {
+    int deps_count() const {
         return _deps_count;
     }
 
-    int query_deps_count() const {
+    int& mutable_deps_count() {
         return _deps_count;
-    }
-
-    size_t item_node_out_size() const {
-        return _output_nodes.size();
-    }
-
-    size_t query_node_out_size() const {
-        return _output_nodes.size();
     }
 
     int node_id() const {
@@ -117,7 +107,6 @@ public:
             out<<"\""<<name()<<"\" -> \""<<node->name()<<"\";"<<std::endl;
         }
     }
-private:
     //executable_t<> _query_fn;
     id_t _node_id;
     int _deps_count;

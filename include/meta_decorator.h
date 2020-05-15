@@ -39,19 +39,6 @@ struct parameter_traits< output<M> > {
     }
 };
 
-//template <template <class> class M>
-//struct parameter_traits< produce<M> > {
-//    typedef type_id<typename M<none_type>::meta_info, none_type> node_meta_id;
-//    typedef typename M<none_type>::meta_info meta_info;
-//    static const parameter_type ptype = parameter_type::PRODUCE;
-//    static int id() {
-//        return node_meta_id::instance().id();
-//    }
-//    static const char* name() {
-//        return node_meta_id::instance().name();
-//    }
-//};
-
 template <class A, class NT>
 void record_input_output(io_description & iodes) {
     if (parameter_traits<A>::ptype == parameter_type::NONE) {

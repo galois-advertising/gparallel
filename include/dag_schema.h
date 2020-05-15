@@ -6,15 +6,20 @@
 #include <memory>
 #include <algorithm>
 #include <optional>
+#include <regex> 
 #include "node_deduce.h"
 #include "node_schema.h"
 #include "util.h"
 #include "executor.h"
 #include "type_id.h"
-#include "debug.h"
 
 
 namespace galois::gparallel {
+
+void operator += (id_set_t & i, const id_set_t & other);
+bool operator -= (id_set_t & i, const id_set_t & other);
+void operator += (id_set_t & i, const node_io_vec & other);
+bool transitive_closure(topology_t& implies);
 
 template<class meta_storage_t>
 using dag_schema = std::list<node_schema_ptr<meta_storage_t>>;
@@ -61,18 +66,17 @@ void register_node_operator(dag_schema<meta_storage_t> & c) {
     c.back()->initialize(name, nullptr, vec);
 }
 
+// register_node
 template <class meta_storage_t, class ...NTS>
 struct register_node {
-    static void reg(dag_schema<meta_storage_t> & c)
-    {
-        register_node<type_list<NTS ...>>::reg(c);
+    static void reg(dag_schema<meta_storage_t> & c) {
+        register_node<meta_storage_t, type_list<NTS ...>>::reg(c);
     };
 };
 
 template <class meta_storage_t, class NT, class ...NTS>
-struct register_node<type_list<meta_storage_t, NT, NTS...>> {
-    static void reg(dag_schema<meta_storage_t> & c)
-    {
+struct register_node<meta_storage_t, type_list<NT, NTS...>> {
+    static void reg(dag_schema<meta_storage_t> & c) {
         register_node_operator<NT>(c);
         register_node<meta_storage_t, NTS...>::reg(c);
     };
@@ -80,65 +84,10 @@ struct register_node<type_list<meta_storage_t, NT, NTS...>> {
 
 template <class meta_storage_t>
 struct register_node<meta_storage_t, type_list<>> {
-    static void reg(dag_schema<meta_storage_t> & ) { /* stop recursion */}
+    static void reg(dag_schema<meta_storage_t> & ) { /* stop recursion , do nothing*/}
 };
 
 
-void operator += (id_set_t & i, const id_set_t & other) {
-    std::transform(other.cbegin(), other.cend(),std::inserter(i, i.end()), 
-        [](auto o){return o;});
-}
-
-bool operator -= (id_set_t & i, const id_set_t & other) {
-    id_set_t diff; 
-    if (i.size() < other.size()) {
-        for (auto id : i) {
-            if (other.find(id) != other.end()) {
-                diff.insert(id);
-            }
-        }
-    } else {
-        for (auto id : other) {
-            if (i.find(id) != i.end()) {
-                diff.insert(id);
-            }
-        }
-    }
-    for (auto id : diff) {
-        i.erase(id);
-    }
-    return diff.size() != 0;
-}
-
-void operator += (id_set_t & i, const node_io_vec & other) {
-    std::transform(other.cbegin(), other.cend(),std::inserter(i, i.end()), 
-        [](auto o){return o.id;});
-}
-
-
-bool transitive_closure(topology_t& implies) {
-    bool has_change = true;
-    while (has_change) {
-        has_change = false;
-        // for every output
-        for (auto & [output, input_set] : implies) {
-            id_set_t sub;
-            // See every input<> as output<> of other nodes,
-            // and we find the input<> or 'other nodes',
-            // these input<> were also 
-            for (auto input_id : input_set) {
-                sub += implies[input_id];
-            }
-            size_t prev_size = input_set.size();
-            input_set += sub;
-            if (input_set.size() > prev_size) {
-                has_change = true;
-            }
-        }
-    }
-    return true;
-
-}
 
 template<class meta_storage_t>
 bool build_meta_topology(const dag_schema<meta_storage_t> & _nodes, topology_t & me) {
@@ -162,9 +111,24 @@ bool build_node_topology(const dag_schema<meta_storage_t> & _nodes, topology_t &
     return true;
 }
 
+void show_meta_depends_graphviz(topology_t & meta_transitive_closure, std::string tag);
+
+bool graphviz(topology_t & target, std::stringstream & ss, std::string tag);
+
 template<class meta_storage_t>
-bool if_node_in(node_schema_ptr<meta_storage_t> node, std::set<node_schema_ptr<meta_storage_t>> & vec) {
-    return std::find(vec.begin(), vec.end(), node) != vec.end();
+void show_node_depends_graphviz(const dag_schema<meta_storage_t>& _nodes, std::string tag) {
+    std::stringstream node_depends_log;
+    node_depends_log<<"\ndigraph "<<tag<<"{\n";
+    node_depends_log<<"rankdir=BT;\n";
+    node_depends_log<<"size=\"8,5\";\n";
+    for (auto node : _nodes) {
+        node->graphviz(node_depends_log);
+    }
+    node_depends_log<<"}";
+    auto log_str = node_depends_log.str();
+    std::regex re("galois::gparallel::none_type, |galois::gparallel::meta_info_t");
+    INFO("%s\nhttp://graphviz.it/#", tag.c_str());
+    INFO("%s", std::regex_replace(log_str, re, "").c_str());
 }
 
 template<class meta_storage_t>
@@ -212,7 +176,7 @@ bool setup_dag_schema(dag_schema<meta_storage_t> & _nodes) {
     topology_t meta_transitive_closure;
     if (build_meta_topology(_nodes, meta_transitive_closure)) {
         if (transitive_closure(meta_transitive_closure)) {
-            debug::show_meta_depends_graphviz(meta_transitive_closure, "meta_transitive_closure");
+            show_meta_depends_graphviz(meta_transitive_closure, "meta_transitive_closure");
         } else {
             FATAL("transitive_closure(meta_transitive_closure) fail", "");
             return false;
@@ -244,9 +208,9 @@ bool setup_dag_schema(dag_schema<meta_storage_t> & _nodes) {
 
                 if (auto upstream_node = output2node[input_meta.id]; 
                     upstream_node != nullptr) {
-                    node->_input_nodes.insert(upstream_node);
-                    upstream_node->_output_nodes.insert(node);
-                    node->_deps_count += 1;
+                    node->mutable_input_nodes().insert(upstream_node);
+                    upstream_node->mutable_output_nodes().insert(node);
+                    node->mutable_deps_count() += 1;
                 } else {
                     return false;
                 }
@@ -255,7 +219,7 @@ bool setup_dag_schema(dag_schema<meta_storage_t> & _nodes) {
         };
         link_node_by_meta();
     }
-    debug::show_node_depends_graphviz(_nodes, "node_depends");
+    show_node_depends_graphviz<meta_storage_t>(_nodes, "node_depends");
     topology_t node_implies;
     build_node_topology(_nodes, node_implies);
     if (!transitive_closure(node_implies)) {
@@ -277,22 +241,22 @@ bool setup_dag_schema(dag_schema<meta_storage_t> & _nodes) {
                 }
             }
         }
-        for (auto input_node_itr = node->_input_nodes.begin(); 
-            input_node_itr != node->_input_nodes.end(); ++input_node_itr) {
+        for (auto input_node_itr = node->mutable_input_nodes().begin(); 
+            input_node_itr != node->mutable_input_nodes().end(); ++input_node_itr) {
             if (nodes_direct_deps.count((*input_node_itr)->node_id())) {
                 continue;
             }
-            if ((*input_node_itr)->_output_nodes.erase(node) < 1) {
+            if ((*input_node_itr)->mutable_output_nodes().erase(node) < 1) {
                 return false;
             }
-            node->_input_nodes.erase(input_node_itr);
-            (*input_node_itr)->_output_nodes.erase(*input_node_itr);
+            node->mutable_input_nodes().erase(input_node_itr);
+            (*input_node_itr)->mutable_output_nodes().erase(*input_node_itr);
             node->_deps_count -= 1;
         }
     }
-    debug::show_node_depends_graphviz<meta_storage_t>(_nodes, "node_depends_after");
+    show_node_depends_graphviz<meta_storage_t>(_nodes, "node_depends_after");
     return true;
 }  
 
-
 }
+

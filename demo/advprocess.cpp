@@ -97,9 +97,9 @@ struct end_node {
 int main() {
     thread_data td;
     dag_schema<thread_data> nodes;
-    register_node<get_ctr_node, get_cpm_node>::reg(nodes);
-    register_node<fill_node>::reg(nodes);
-    register_node<gen_ctr_node, gen_cpm_node, end_node>::reg(nodes);
+    register_node<thread_data, get_ctr_node, get_cpm_node>::reg(nodes);
+    register_node<thread_data, fill_node>::reg(nodes);
+    register_node<thread_data, gen_ctr_node, gen_cpm_node, end_node>::reg(nodes);
     setup_dag_schema<thread_data>(nodes);
     if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
         for (auto task : tasks.value()) {
