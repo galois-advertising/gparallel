@@ -19,7 +19,7 @@ namespace galois::gparallel
 template <class A, class NT>
 struct deduce_op {
     static void deduce(io_description & iodes) {
-        record_io<A, NT>(iodes);
+        record_input_output<A, NT>(iodes);
         depth_first_search_of_meta<typename parameter_traits<A>::meta_info>::template deduce<NT>(iodes);
     }
 };

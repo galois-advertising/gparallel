@@ -53,7 +53,7 @@ struct parameter_traits< produce<M> > {
 };
 
 template <class A, class NT>
-void record_io(io_description & iodes) {
+void record_input_output(io_description & iodes) {
     if (parameter_traits<A>::ptype == parameter_type::NONE) {
         return;
     }
@@ -116,12 +116,12 @@ struct pop_and_process_M<STACK, template_list<meta_name, super_meta_names...>>
     template <class P>
     static void deduce(io_description & deps) {
 #ifdef _DEBUG
-        DEBUG("%s::deduce[record_io(%s)]", 
+        DEBUG("%s::deduce[record_input_output(%s)]", 
             demangle(typeid(pop_and_process_M<STACK, template_list<meta_name, super_meta_names...>>).name()).c_str(),
             demangle(typeid(meta_name<none_type>).name()).c_str()
         );
 #endif
-        record_io<input<meta_name>, P>(deps);
+        record_input_output<input<meta_name>, P>(deps);
         push_next_M<pop_and_process_M<STACK, template_list<super_meta_names...>>, typename meta_name<none_type>::meta_info>::template deduce<P>(deps);
     }
 };
