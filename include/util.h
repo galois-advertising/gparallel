@@ -63,6 +63,7 @@ public:
     T * data() {
         return _data;
     }
+private:
     T * _data;
 };
 
