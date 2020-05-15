@@ -4,21 +4,18 @@
 #include "log.h"
 
 namespace galois::gparallel {
-// T: Data meta imp
-// DMT: Data meta type
-// M: Data meta template
-// MS: Other M which M depends
-template <class T, class MT, 
-    template <class> class M, 
-    template <class> class... MS_dep>
-struct meta_traits : public T{
-    typedef meta_info_list<MT, M, MS_dep...> meta_info;
-    typedef MT meta_storage;
+
+template <class T, class _meta_storage_t, 
+    template <class> class _meta_name, 
+    template <class> class... _super_meta_names>
+struct meta_traits : public T {
+    typedef meta_info_t<_meta_storage_t, _meta_name, _super_meta_names...> meta_info;
+    typedef _meta_storage_t meta_storage_t;
 };
-#define DECL_META(name, meta_storage, ms_dep...) template <class T> \
-struct name : public meta_traits<T, meta_storage, name, ##ms_dep>
+#define DECL_META(meta_name, meta_storage_t, super_meta_names...) template <class T> \
+struct meta_name : public meta_traits<T, meta_storage_t, meta_name, ##super_meta_names>
 // DECL_MEAT(MetaName, MetaType, OtherMetaName...)
-// MetaName<auto_type>[getters, setters] -> meta_traits[meta_info, meta_storage] -> auto_type    
+// MetaName<auto_type>[getters, setters] -> meta_traits[meta_info, meta_storage_t] -> auto_type    
 // `data_meta_name` is essentially a T.
 // Between `data_meta_name` and T, there a meta_traits 
 // for describe: 
@@ -26,41 +23,38 @@ struct name : public meta_traits<T, meta_storage, name, ##ms_dep>
 // 2. Type of this data_meta 
 
 
-template <int I, class T>
-struct meta_storage {
-    meta_storage() = delete;
-    template <class U>
-    meta_storage(const U & u) : data(u) {
-        INFO("[ENTRY] meta_storage<%d, %s>::meta_storage<%s>()",
-            I, demangle(typeid(T).name()).c_str(), demangle(typeid(U).name()).c_str());
-    }
-    T data;
-};
+//template <int I, class T>
+//struct meta_storage_t {
+//    meta_storage_t() = delete;
+//    template <class U>
+//    meta_storage_t(const U & u) : data(u) {
+//        INFO("[ENTRY] meta_storage_t<%d, %s>::meta_storage_t<%s>()",
+//            I, demangle(typeid(T).name()).c_str(), demangle(typeid(U).name()).c_str());
+//    }
+//    T data;
+//};
 
-template <int I, class... TS>
-struct storage_helper {};
+//template <int I, class... TS>
+//struct storage_helper {};
+//
+//template <int I, class T, class... TS>
+//struct storage_helper <I, T, TS...> : 
+//    public meta_storage_t <I, T>, 
+//    public storage_helper<I + 1, TS...> {
+//    template <class U>
+//    storage_helper(const U & u) : 
+//        meta_storage_t<I, T>(u), storage_helper<I + 1, TS...>(u) {};
+//};
+//
+//template <int I>
+//struct storage_helper<I> {
+//    template <class U> 
+//    storage_helper(const U &) {}
+//};
 
-template <int I, class T, class... TS>
-struct storage_helper <I, T, TS...> : 
-    public meta_storage <I, T>, 
-    public storage_helper<I + 1, TS...> {
-    template <class U>
-    storage_helper(const U & u) : meta_storage<I, T>(u), storage_helper<I + 1, TS...>(u) {
-
-    };
-};
-
-template <int I>
-struct storage_helper<I> {
-    template <class U> 
-    storage_helper(const U &) {
-
-    }
-};
-
-template <int I, class T>
-T* get_state(meta_storage<I, T> & states) {
-    return &states.data;
-}
+//template <int I, class T>
+//T* get_state(meta_storage_t<I, T> & states) {
+//    return &states.data;
+//}
 
 }

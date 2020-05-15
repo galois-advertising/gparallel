@@ -11,20 +11,17 @@
 #include "debug.h"
 
 
-namespace galois::gparallel
-{
+namespace galois::gparallel {
 
 typedef std::map< id_t, std::vector<node_schema_ptr> > meta_to_nodevec_t;
 typedef std::map< id_t, node_schema_ptr > meta_to_node_t;
 
-void operator += (id_set_t & i, const id_set_t & other)
-{
+void operator += (id_set_t & i, const id_set_t & other) {
     std::transform(other.cbegin(), other.cend(),std::inserter(i, i.end()), 
         [](auto o){return o;});
 }
 
-bool operator -= (id_set_t & i, const id_set_t & other)
-{
+bool operator -= (id_set_t & i, const id_set_t & other) {
     id_set_t diff; 
     if (i.size() < other.size()) {
         for (auto id : i) {
@@ -43,12 +40,9 @@ bool operator -= (id_set_t & i, const id_set_t & other)
         i.erase(id);
     }
     return diff.size() != 0;
-
-    
 }
 
-void operator += (id_set_t & i, const node_io_vec & other)
-{
+void operator += (id_set_t & i, const node_io_vec & other) {
     std::transform(other.cbegin(), other.cend(),std::inserter(i, i.end()), 
         [](auto o){return o.id;});
 }
@@ -56,8 +50,7 @@ void operator += (id_set_t & i, const node_io_vec & other)
 static node_schema * const PRODUCE_MARK = reinterpret_cast<node_schema*>(0x1);
 static node_schema * const SOUT_MARK = reinterpret_cast<node_schema*>(0x2);
 
-bool transitive_closure(topology_t & implies)
-{
+bool transitive_closure(topology_t & implies) {
     bool has_change = true;
     while (has_change) {
         has_change = false;
@@ -105,8 +98,7 @@ bool if_node_in(node_schema_ptr node, std::set<node_schema_ptr> & vec) {
     return std::find(vec.begin(), vec.end(), node) != vec.end();
 }
 
-bool setup_dag_schema(dag_schema & _nodes)
-{
+bool setup_dag_schema(dag_schema & _nodes) {
     if (auto pos = std::find_if(_nodes.begin(), _nodes.end(), [](auto ptr){
         size_t query_meta_cnt = 0;
         size_t item_meta_cnt = 0;

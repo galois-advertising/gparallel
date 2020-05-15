@@ -39,7 +39,7 @@ struct io_description {
     node_io_map input;
     node_io_map output;
 };
-template <class D, template <class> class... MS> struct meta_info_list {};
+template <class D, template <class> class... MS> struct meta_info_t {};
 template <template <class> class... TMPS> struct template_list {};
 template <class... TS> struct type_list {};
 
@@ -63,6 +63,7 @@ public:
     T * data() {
         return _data;
     }
+private:
     T * _data;
 };
 

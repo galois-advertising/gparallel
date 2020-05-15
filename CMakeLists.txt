@@ -45,3 +45,8 @@ ADD_LIBRARY(gparallel STATIC ${gparallel_srcs})
 file(GLOB gparallel_test_srcs "${PROJECT_SOURCE_DIR}/test/*.cpp")
 ADD_EXECUTABLE(gparallel_test ${gparallel_test_srcs})
 TARGET_LINK_LIBRARIES(gparallel_test gtest common gparallel)
+
+# demo
+file(GLOB demo_srcs "${PROJECT_SOURCE_DIR}/demo/*.cpp")
+ADD_EXECUTABLE(demo ${demo_srcs})
+TARGET_LINK_LIBRARIES(demo gtest common gparallel)
