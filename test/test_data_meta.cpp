@@ -2,9 +2,7 @@
 #include <iostream>
 #include <cxxabi.h>
 #include <gtest/gtest.h>
-#include "meta.h"
-#include "meta_decorator.h"
-#include "log.h"
+#include "gparallel.h"
 using namespace galois::gparallel;
 struct thread_data {
     int AAA_storage = 0;
@@ -53,6 +51,4 @@ TEST(Test, meta_deduce) {
     input<m_a>::input_imp::deduce<none_type>(deps);
     thread_data td(1);
     input<m_a> input_a(&td);
-
-    //storage_helper<0, input<m_aa>, input<m_ab>, output<m_ac>> storage(a);
 }

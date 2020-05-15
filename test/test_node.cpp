@@ -1,9 +1,7 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <stdio.h>
-#include "node_deduce.h"
-#include "util.h"
-#include "meta.h"
+#include "gparallel.h"
 using namespace galois::gparallel;
 
 struct base {};

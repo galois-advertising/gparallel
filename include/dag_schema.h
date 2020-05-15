@@ -69,14 +69,14 @@ void register_node_operator(dag_schema<meta_storage_t> & c) {
 // register_node
 template <class meta_storage_t, class ...NTS>
 struct register_node {
-    static void reg(dag_schema<meta_storage_t> & c) {
+    static void reg(dag_schema<meta_storage_t>& c) {
         register_node<meta_storage_t, type_list<NTS ...>>::reg(c);
     };
 };
 
 template <class meta_storage_t, class NT, class ...NTS>
 struct register_node<meta_storage_t, type_list<NT, NTS...>> {
-    static void reg(dag_schema<meta_storage_t> & c) {
+    static void reg(dag_schema<meta_storage_t>& c) {
         register_node_operator<NT>(c);
         register_node<meta_storage_t, NTS...>::reg(c);
     };
@@ -84,7 +84,7 @@ struct register_node<meta_storage_t, type_list<NT, NTS...>> {
 
 template <class meta_storage_t>
 struct register_node<meta_storage_t, type_list<>> {
-    static void reg(dag_schema<meta_storage_t> & ) { /* stop recursion , do nothing*/}
+    static void reg(dag_schema<meta_storage_t>& ) { /* stop recursion , do nothing*/}
 };
 
 
@@ -148,8 +148,6 @@ bool setup_dag_schema(dag_schema<meta_storage_t> & _nodes) {
         FATAL("can not process both query and item:%s", (*pos)->name().c_str());
         return false;
     }
-    meta_to_nodevec_t<meta_storage_t> produce2nodevec;
-    meta_to_nodevec_t<meta_storage_t> sout2nodevec;
     meta_to_node_t<meta_storage_t> output2node;
     for (auto node : _nodes) {
         for (auto & meta: node->_output_metas) {

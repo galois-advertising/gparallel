@@ -8,7 +8,6 @@ std::string demangle(const char* name);
 
 template <template<class> class M> class input; 
 template <template<class> class M> class output;
-template <template<class> class M> class produce;
 template <class M>
 struct parameter_traits {
 };
@@ -169,13 +168,6 @@ public:
     }
 private:
     meta_imp_type _v;
-};
-
-template <template<class> class M>
-class produce {
-public:
-    typedef typename M<none_type>::meta_info meta_info;
-    typedef typename M<none_type>::meta_storage_t meta_storage_t;
 };
 
 }

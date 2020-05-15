@@ -11,3 +11,4 @@
 #include "util.h"
 #include "varlist.h"
 #include "gparallel.h"
+#include "log.h"

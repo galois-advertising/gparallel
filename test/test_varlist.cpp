@@ -2,12 +2,7 @@
 #include <gtest/gtest.h>
 #include <stdio.h>
 #include <algorithm>
-#include "node_deduce.h"
-#include "util.h"
-#include "meta.h"
-#include "dag_schema.h"
-#include "type_id.h"
-#include "varlist.h"
+#include "gparallel.h"
 using namespace galois::gparallel;
 
 struct base {};
