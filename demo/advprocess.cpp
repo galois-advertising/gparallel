@@ -59,9 +59,6 @@ DECL_META(cpm_ordered_advlist, thread_data) {
 
 struct get_ctr_node {
     void process(input<original> ori, output<ctr> ctr) {
-        ctr.resize(ori->mutable_advs_original().size());
-
-
     }
 };
 

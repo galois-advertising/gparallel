@@ -69,10 +69,9 @@ void record_io(io_description & iodes) {
         iodes.output[link.id] = link;
     }
 };
-template <class STACK, class... MS>
-struct pop_and_process_M {};
-template <class STACK, class... MS>
-struct push_next_M {};
+
+template <class STACK, class... MS> struct pop_and_process_M {};
+template <class STACK, class... MS> struct push_next_M {};
 
 
 // STACK: An abstract stack type, which story some info for Depth-First-Search
@@ -80,17 +79,17 @@ struct push_next_M {};
 // M: Data meta type
 // MS_dep: The data meta types which depends it
 // template_list: a list of any template
-// meta_info_list: a special list for store <D, M, MS_dep ...>
+// meta_info_t: a special list for store <D, M, MS_dep ...>
 //
-// deducer<STACK, meta_info_list>
+// deducer<STACK, meta_info_t>
 template <class STACK, class D, template <class> class M, template <class> class... MS_dep>
-struct push_next_M<STACK, meta_info_list<D, M, MS_dep ...>> 
+struct push_next_M<STACK, meta_info_t<D, M, MS_dep ...>> 
     : public pop_and_process_M<STACK, template_list<MS_dep...>> 
 {
     template <class P>
     static void deduce(io_description & deps) {
 #ifdef _DEBUG
-        DEBUG("%s::deduce[normal]", demangle(typeid(push_next_M<STACK, meta_info_list<D, M, MS_dep ...>>).name()).c_str());
+        DEBUG("%s::deduce[normal]", demangle(typeid(push_next_M<STACK, meta_info_t<D, M, MS_dep ...>>).name()).c_str());
 #endif
         pop_and_process_M<STACK, template_list<MS_dep...>>::template deduce<P>(deps);
     }
@@ -130,7 +129,7 @@ struct pop_and_process_M<STACK, template_list<M, MS_dep ...>>
 // start
 template <class T> struct depth_first_search_of_meta {};
 template <class D, template <class> class M, template <class> class... MS_dep>
-struct depth_first_search_of_meta< meta_info_list<D, M, MS_dep ...> > 
+struct depth_first_search_of_meta< meta_info_t<D, M, MS_dep ...> > 
     : public M<pop_and_process_M<storage_reference<D>, template_list<MS_dep ...>>> 
 {
     depth_first_search_of_meta(const D * data) {
@@ -139,7 +138,7 @@ struct depth_first_search_of_meta< meta_info_list<D, M, MS_dep ...> >
     template <class P>
     static void deduce(io_description & deps) {
 #ifdef _DEBUG
-        DEBUG("%s::deduce[start]", demangle(typeid(depth_first_search_of_meta< meta_info_list<D, M, MS_dep ...> >).name()).c_str());
+        DEBUG("%s::deduce[start]", demangle(typeid(depth_first_search_of_meta< meta_info_t<D, M, MS_dep ...> >).name()).c_str());
 #endif
         pop_and_process_M<storage_reference<D>, template_list<MS_dep ...>>::template deduce<P>(deps);
     };
@@ -151,12 +150,15 @@ template <template<class> class M>
 class input {
 public:
     typedef typename M<none_type>::meta_info meta_info;
-    typedef typename M<none_type>::meta_storage data_meta_storage;
+    typedef typename M<none_type>::meta_storage_t data_meta_storage_t;
     typedef depth_first_search_of_meta<meta_info> input_imp;
-    input(const data_meta_storage * data) : _m(const_cast<data_meta_storage*>(data)) {}
+    input(const data_meta_storage_t * data) : _m(const_cast<data_meta_storage_t*>(data)) {}
     template <template <class> class AnyM>
     operator input<AnyM>() {
         return input<AnyM>(_m.data());
+    }
+    const input_imp* operator-> () {
+        return &_m;
     }
 private:
     input_imp _m;
@@ -166,14 +168,18 @@ template <template<class> class M>
 class output {
 public:
     typedef typename M<none_type>::meta_info meta_info;
-    typedef typename M<none_type>::meta_storage data_meta_storage;
-    typedef M<storage_reference<data_meta_storage>> * meta_imp_type;
+    typedef typename M<none_type>::meta_storage_t data_meta_storage_t;
+    typedef M<storage_reference<data_meta_storage_t>> * meta_imp_type;
 
-    struct output_storage_t : public M<storage_reference<data_meta_storage>> {
-        output_storage_t (data_meta_storage * data) { this->reset(data); }
+    struct output_storage_t : public M<storage_reference<data_meta_storage_t>> {
+        output_storage_t (data_meta_storage_t * data) { this->reset(data); }
     };
 
     output(meta_imp_type v) : _v(v) {}
+    meta_imp_type operator->() {
+        return _v;
+    }
+private:
     meta_imp_type _v;
 };
 
@@ -181,7 +187,7 @@ template <template<class> class M>
 class produce {
 public:
     typedef typename M<none_type>::meta_info meta_info;
-    typedef typename M<none_type>::meta_storage data_meta_storage;
+    typedef typename M<none_type>::meta_storage_t data_meta_storage_t;
 };
 
 }
