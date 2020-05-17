@@ -48,7 +48,7 @@ DECL_META(m_a, thread_data, m_aa, m_ab, m_ac){};
 TEST(Test, meta_deduce) {
     using namespace galois::gparallel;
     io_description deps;
-    input<m_a>::input_imp::deduce<none_type>(deps);
+    input<m_a>::meta_imp_t::deduce<none_type>(deps);
     thread_data td(1);
     input<m_a> input_a(&td);
 }

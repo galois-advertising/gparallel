@@ -60,7 +60,7 @@ public:
     const T * data() const {
         return _data;
     }
-    T * data() {
+    T * mutable_data() {
         return _data;
     }
 private:

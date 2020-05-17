@@ -70,8 +70,7 @@ template <class STACK, class... MS> struct push_next_M {};
 // deducer<STACK, meta_info_t>
 template <class STACK, class D, template <class> class M, template <class> class... MS_dep>
 struct push_next_M<STACK, meta_info_t<D, M, MS_dep ...>> 
-    : public pop_and_process_M<STACK, template_list<MS_dep...>> 
-{
+    : public pop_and_process_M<STACK, template_list<MS_dep...>> {
     template <class P>
     static void deduce(io_description & deps) {
 #ifdef _DEBUG
@@ -97,8 +96,7 @@ struct pop_and_process_M<STACK, template_list<>> : public STACK {
 // deducer<STACK, template_list>
 template <class STACK, template <class> class meta_name, template <class> class...super_meta_names>
 struct pop_and_process_M<STACK, template_list<meta_name, super_meta_names...>> 
-    : public meta_name<push_next_M<pop_and_process_M<STACK, template_list<super_meta_names...>>, typename meta_name<none_type>::meta_info>> 
-{
+    : public meta_name<push_next_M<pop_and_process_M<STACK, template_list<super_meta_names...>>, typename meta_name<none_type>::meta_info>> {
     template <class P>
     static void deduce(io_description & deps) {
 #ifdef _DEBUG
@@ -116,10 +114,9 @@ struct pop_and_process_M<STACK, template_list<meta_name, super_meta_names...>>
 template <class T> struct depth_first_search_of_meta {};
 template <class meta_storage_t, template <class> class meta_name, template <class> class... super_meta_names>
 struct depth_first_search_of_meta< meta_info_t<meta_storage_t, meta_name, super_meta_names...> > 
-    : public meta_name<pop_and_process_M<storage_reference<meta_storage_t>, template_list<super_meta_names...>>> 
-{
-    depth_first_search_of_meta(const meta_storage_t* data) {
-        this->reset(const_cast<meta_storage_t*>(data)); 
+    : public meta_name<pop_and_process_M<storage_reference<meta_storage_t>, template_list<super_meta_names...>>> {
+    depth_first_search_of_meta(meta_storage_t* data) {
+        this->reset(data); 
     }
     template <class P>
     static void deduce(io_description & deps) {
@@ -130,24 +127,18 @@ struct depth_first_search_of_meta< meta_info_t<meta_storage_t, meta_name, super_
     };
 };
 
-
-
 template <template<class> class M>
 class input {
 public:
     typedef typename M<none_type>::meta_info meta_info;
     typedef typename M<none_type>::meta_storage_t meta_storage_t;
-    typedef depth_first_search_of_meta<meta_info> input_imp;
-    input(const meta_storage_t* data) : _m(const_cast<meta_storage_t*>(data)) {}
-    template <template <class> class AnyM>
-    operator input<AnyM>() {
-        return input<AnyM>(_m.data());
-    }
-    const input_imp* operator-> () {
+    typedef depth_first_search_of_meta<meta_info> meta_imp_t;
+    input(meta_storage_t* data) : _m(data) {}
+    meta_imp_t* operator-> () {
         return &_m;
     }
 private:
-    input_imp _m;
+    meta_imp_t _m;
 };
 
 template <template<class> class M>
@@ -155,18 +146,13 @@ class output {
 public:
     typedef typename M<none_type>::meta_info meta_info;
     typedef typename M<none_type>::meta_storage_t meta_storage_t;
-    //typedef M<storage_reference<meta_storage_t>> * meta_imp_type;
-
-    //struct output_storage_t : public M<storage_reference<meta_storage_t>> {
-    //    output_storage_t (meta_storage_t * data) { this->reset(data); }
-    //};
-
-    output(meta_storage_t* v) : _v(v) {}
-    //meta_storage_t* operator->() {
-    //    return _v;
-    //}
+    typedef depth_first_search_of_meta<meta_info> meta_imp_t;
+    output(meta_storage_t* data) : _m(data) {}
+    meta_imp_t* operator->() {
+        return &_m;
+    }
 private:
-    meta_storage_t* _v;
+    meta_imp_t _m;
 };
 
 }

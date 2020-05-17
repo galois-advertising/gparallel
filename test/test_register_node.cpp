@@ -18,27 +18,27 @@ DECL_META(MetaE, base, MetaD) {};
 
 struct NodeA
 {
-    int process(input<MetaA> b) { return 0; }
+    static int process(input<MetaA> b) { return 0; }
 };
 
 struct NodeB
 {
-    int process(input<MetaA> a, output<MetaB> b) { return 0; }
+    static int process(input<MetaA> a, output<MetaB> b) { return 0; }
 };
 
 struct NodeC
 {
-    int process(output<MetaC> c) { return 0; }
+    static int process(output<MetaC> c) { return 0; }
 };
 
 struct NodeD
 {
-    int process(input<MetaB> b, input<MetaC> c, output<MetaD> d) { return 0; }
+    static int process(input<MetaB> b, input<MetaC> c, output<MetaD> d) { return 0; }
 };
 
 struct NodeE
 {
-    int process(output<MetaE> e) { return 0; }
+    static int process(output<MetaE> e) { return 0; }
 };
 
 TEST(Test, register_node) {

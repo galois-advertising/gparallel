@@ -13,7 +13,6 @@
 #include "executor.h"
 #include "type_id.h"
 
-
 namespace galois::gparallel {
 
 void operator += (id_set_t & i, const id_set_t & other);
@@ -86,8 +85,6 @@ template <class meta_storage_t>
 struct register_node<meta_storage_t, type_list<>> {
     static void reg(dag_schema<meta_storage_t>& ) { /* stop recursion , do nothing*/}
 };
-
-
 
 template<class meta_storage_t>
 bool build_meta_topology(const dag_schema<meta_storage_t> & _nodes, topology_t & me) {
