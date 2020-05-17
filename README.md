@@ -66,7 +66,6 @@ TARGET_LINK_LIBRARIES(your-bin common gparallel)
 
 `gparallel`是一款基于`DAG(Directed acyclic graph)`的任务调度框架。`DAG`在计算机领域有着广泛的应用，例如在大数据计算中可以使用DAG指导Hadoop任务的执行顺序等等。在软件设计中也被广泛应用，开源社区的DAG-based调度框架也不胜枚举。但是其中几乎所有框架都采用了配置的方式生成调度DAG图，例如比较常见的[cpp-taskflow](https://github.com/cpp-taskflow/cpp-taskflow)。
 
-<img align="right" width="20%" src="./image/cpp-task.png">
 ```cpp
     auto [A, B, C, D] = taskflow.emplace(
       [] () { std::cout << "TaskA\n"; },
@@ -80,10 +79,11 @@ TARGET_LINK_LIBRARIES(your-bin common gparallel)
     C.precede(D);  // C runs before D 
 }
 ```
+<img align="right" width="20%" src="./image/cpp-task.png">
 
-上面代码中想要生成预期的DAG图需要人工显式定义每两个节点之间的依赖关系，这种方式的有点是理解比较直观，但是缺点也很明显：
-* 在有大量任务的时候，人工定于DAG图比较困难并且容易出错
-* 工业环境中很多业务，并不是以任务驱动，而是以数据驱动，需要花费大量时间来梳理数据之间的依赖，从而转化为任务驱动
+上面代码中想要生成预期的DAG图需要人工显式定义每两个节点之间的依赖关系，这种方式的有点是理解比较直观，但是缺点也非常明显：
+* 在有大量任务的时候，人工定于DAG图比较困难并且容易出错。现实中的业务系统一般是多人同时开发，这就需要owner来对所有的任务节点之间的依赖关系进行人工梳理，可维护性较差。
+* 工业环境中很多业务，并不是以任务驱动，而是以数据驱动，需要花费大量时间来梳理数据之间的依赖，从而转化为任务驱动。
 
 # gparallel如何解决问题
 
