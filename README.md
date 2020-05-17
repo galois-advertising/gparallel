@@ -3,16 +3,16 @@
 [![Build Status](https://www.travis-ci.org/galois-advertising/gparallel.svg?branch=master)](https://www.travis-ci.org/galois-advertising/gparallel)
 
 
-gparallel是一个针对逻辑比较复杂的信息检索系统而设计的并行任务调度框架。基于DAG(Directed acyclic graph)进行并行任务调度，且自动根据任务的输入和输出推导依赖关系。
+`gparallel`是一个针对具有复杂流程和逻辑的单体式信息检索系统而设计的并行任务调度框架。基于`Meta Programming`根据任务的输入和输出自动推导依赖关系，生成`DAG(Directed acyclic graph)`并进行并行任务调度。
 
 # Quick start
 
 * 编译依赖
     - g++8
-    - boost-v1.70
-    - gtest-v1.10.0
+    - boost_log-mt v1.70
+    - gtest v1.10.0
 
-下载并编译test
+## 下载编译test和demo
 
 ```shell
 $ git clone git@github.com:galois-advertising/gparallel.git
@@ -21,11 +21,14 @@ $ git submodule update --init --recursive
 $ mkdir build
 $ cd build
 $ cmake ..
-$ make gparallel_test
-$ ./gparallel_test
+$ make
+$ ./test
+$ ./demo
 ```
 
-将gparallel作为你项目的一部分
+## 将gparallel作为你项目的一部分
+
+首先将`gparallel`以及依赖的`common`和`gtest`设置为`git submodule`
 
 ```shell
 cd your-project
@@ -37,7 +40,8 @@ git checkout release-1.10.0
 git add gtest
 git commit -m "Add gparallel"
 ```
-并且修改`CMakeLists.txt`，加入：
+然后修改`CMakeLists.txt`，加入：
+
 ```cmake
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/common/util/include")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/gparallel/include")
@@ -58,35 +62,24 @@ TARGET_LINK_LIBRARIES(your-bin common gparallel)
 
 但是，随着开发的人越来越多，大家都在上面加入自己的`业务逻辑`和新的`数据变量`，此时变量增加到了几百个，变量之间的赋值顺序与依赖关系开始变得复杂，一些代码逻辑已经不那么好理解。这个时候即便是有注释，也没有一个人能说清楚这些变量之间的依赖关系以及这些业务逻辑之间的执行顺序，简直就是一团乱麻。
 
-每次新的开发都如履薄冰，每次排查问题都耗时耗力。这就是笔者所在公司的系统现状，500人参与开发，百万行代码，天级别的迭代更新。作为最复杂的在线广告系统之一，如何组织繁杂的业务逻辑，如何存放各类型的数据，这就是为什么需要gparallel.
+每次新的开发都如履薄冰，每次排查问题都耗时耗力。这就是笔者所在公司的系统现状，500人参与开发，百万行代码，天级别的迭代更新。作为最复杂的在线广告系统之一，如何组织繁杂的业务逻辑，如何存放各类型的数据，这就是为什么需要`gparallel`.
 
-DAG在任务调度领域被广泛应用，开源社区的DAG-based调度框架也不胜枚举。其中几乎所有框架都采用了配置的方式生成调度DAG图，例如比较常见的[cpp-taskflow](https://github.com/cpp-taskflow/cpp-taskflow)。
+`gparallel`是一款基于`DAG(Directed acyclic graph)`的任务调度框架。`DAG`在计算机领域有着广泛的应用，例如在大数据计算中可以使用DAG指导Hadoop任务的执行顺序等等。在软件设计中也被广泛应用，开源社区的DAG-based调度框架也不胜枚举。但是其中几乎所有框架都采用了配置的方式生成调度DAG图，例如比较常见的[cpp-taskflow](https://github.com/cpp-taskflow/cpp-taskflow)。
 
 ```cpp
-#include <taskflow/taskflow.hpp>  // Cpp-Taskflow is header-only
-
-int main(){
-  
-  tf::Executor executor;
-  tf::Taskflow taskflow;
-
-  auto [A, B, C, D] = taskflow.emplace(
-    [] () { std::cout << "TaskA\n"; },               //  task dependency graph
-    [] () { std::cout << "TaskB\n"; },               // 
-    [] () { std::cout << "TaskC\n"; },               //          +---+          
-    [] () { std::cout << "TaskD\n"; }                //    +---->| B |-----+   
-  );                                                 //    |     +---+     |
-                                                     //  +---+           +-v-+ 
-  A.precede(B);  // A runs before B                  //  | A |           | D | 
-  A.precede(C);  // A runs before C                  //  +---+           +-^-+ 
-  B.precede(D);  // B runs before D                  //    |     +---+     |    
-  C.precede(D);  // C runs before D                  //    +---->| C |-----+    
-                                                     //          +---+          
-  executor.run(taskflow).wait();
-
-  return 0;
+    auto [A, B, C, D] = taskflow.emplace(
+      [] () { std::cout << "TaskA\n"; },
+      [] () { std::cout << "TaskB\n"; },
+      [] () { std::cout << "TaskC\n"; },
+      [] () { std::cout << "TaskD\n"; }
+    );
+    A.precede(B);  // A runs before B 
+    A.precede(C);  // A runs before C 
+    B.precede(D);  // B runs before D 
+    C.precede(D);  // C runs before D 
 }
 ```
+<img align="right" width="30%" src="./image/cpp-task.png">
 
 上面代码中想要生成预期的DAG图需要人工显式定义每两个节点之间的依赖关系，这种方式的有点是理解比较直观，但是缺点也很明显：
 * 在有大量任务的时候，人工定于DAG图比较困难并且容易出错
