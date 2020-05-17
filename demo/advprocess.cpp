@@ -59,11 +59,13 @@ DECL_META(cpm_ordered_advlist, thread_data) {
 
 struct get_ctr_node {
     static void process(input<original> ori, output<ctr> ctr) {
+        INFO("[gparallel] get_ctr_node", "");
     }
 };
 
 struct get_cpm_node {
     static void process(input<original> ori, output<cpm> cpm) {
+        INFO("[gparallel] get_cpm_node", "");
 
     }
 };
@@ -71,13 +73,14 @@ struct get_cpm_node {
 struct fill_node {
     static void process(input<ctr> ctr, input<cpm> cpm, input<original> ori, 
         output<original_with_ctr_cpm> ori_ctr_cpm) {
-
+        INFO("[gparallel] fill_node", "");
     }
 };
 
 struct gen_ctr_node {
     static void process(input<original_with_ctr_cpm> ori_ctr_cpm, 
         output<ctr_ordered_advlist> ctr_ordered) {
+        INFO("[gparallel] gen_ctr_node", "");
 
     }
 };
@@ -85,12 +88,13 @@ struct gen_ctr_node {
 struct gen_cpm_node {
     static void process(input<original_with_ctr_cpm> ori_ctr_cpm, 
         output<cpm_ordered_advlist> cpm_ordered) {
+        INFO("[gparallel] gen_cpm_node", "");
     }
 };
 
 struct end_node {
     static void process(input<ctr_ordered_advlist>, input<cpm_ordered_advlist>) {
-
+        INFO("[gparallel] end_node", "");
     }
 };
 
@@ -104,6 +108,7 @@ int main() {
     if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
         for (auto task : tasks.value()) {
             INFO("Execute[%s]", task->name().c_str());
+            task->mutable_executor()(&td);
         }
     }
     return 0;

@@ -2,6 +2,7 @@
 #pragma once
 #include <memory>
 #include <sstream>
+#include "executor.h"
 #include "util.h"
 namespace galois::gparallel {
 
@@ -29,16 +30,17 @@ template<class meta_storage_t>
 class node_schema {
 public:
     using node_schema_ptr_t = node_schema_ptr<meta_storage_t>;
+    using executor_t = executable_t<meta_storage_t>;
     node_schema() {
         static int g_node_id = 0;
         _node_id = g_node_id++;
-        //_query_fn = nullptr;
+        _executor = nullptr;
         _deps_count = 0;
     }
 
-    void initialize(std::string name, query_function_type query_fn, const io_description & io) {
+    void initialize(std::string name, executor_t query_fn, const io_description & io) {
         _name = name;
-        //_query_fn = query_fn;
+        _executor = query_fn;
 
         auto fill_meta = [](const node_io_map & s, node_io_vec & d) {
             d.reserve(s.size());
@@ -57,6 +59,9 @@ public:
 
 public:
     // getter
+    executor_t& mutable_executor() {
+        return _executor;
+    }
 
     node_io_vec& mutable_input_metas() {
         return _input_metas;
@@ -107,7 +112,7 @@ public:
             out<<"\""<<name()<<"\" -> \""<<node->name()<<"\";"<<std::endl;
         }
     }
-    //executable_t<> _query_fn;
+    executor_t _executor;
     id_t _node_id;
     int _deps_count;
     std::string _name;

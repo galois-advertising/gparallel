@@ -10,12 +10,13 @@ using executable_t = std::function<void(meta_storage_t*)>;
 template<class meta_storage_t, class process_t>
 class executor {
 private:
-    static bool process(process_t* fn, meta_storage_t* storage) {
+    static bool invoke(process_t fn, meta_storage_t* storage) {
         invoke_ex(fn, storage);
+        return true;
     }
 public:
-    static executable_t<meta_storage_t> create(process_t fn) {
-        return std::bind(&process, fn, std::placeholders::_1);
+    static executable_t<meta_storage_t> create(process_t process) {
+        return std::bind(&invoke, process, std::placeholders::_1);
     }
 };
 

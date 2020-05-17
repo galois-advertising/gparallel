@@ -63,7 +63,7 @@ void register_node_operator(dag_schema<meta_storage_t> & c) {
     c.push_back(new_node);
     io_description vec;
     deduce_depends<NT>::deduce(vec);
-    c.back()->initialize(name, nullptr, vec);
+    //c.back()->initialize(name, executor<meta_storage_t, decltype(NT::process)>::create(NT::process), vec);
 }
 
 // register_node

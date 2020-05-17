@@ -67,7 +67,5 @@ private:
     T * _data;
 };
 
-class node;
-typedef void(*query_function_type)(node&);
 
 }

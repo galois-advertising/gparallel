@@ -27,9 +27,9 @@ struct find_index {
 template <class T, int I, class A, class... AS>
 struct find_index<T, I, A, AS...> {
     typedef char VT[I];
-    static VT& test(T*);
+    static VT& test(T);
     static typename find_index<T, I + 1, AS...>::type& test(...);
-    typedef decltype(test((A*)0)) type;
+    typedef decltype(test(A())) type;
     static const int index = sizeof(type);
 };
 
