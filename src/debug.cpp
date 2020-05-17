@@ -9,15 +9,10 @@
 #include "type_id.h"
 #include "util.h"
 #include "log.h"
-#include "debug.h"
 
 
-namespace galois::gparallel::debug
-{
-void show_meta_depends_graphviz(
-    topology_t & meta_transitive_closure,
-    std::string tag)
-{
+namespace galois::gparallel {
+void show_meta_depends_graphviz(topology_t & meta_transitive_closure, std::string tag) {
     std::stringstream meta_depends_log;
     meta_depends_log<<"\ndigraph "<<tag<<"{\n";
     meta_depends_log<<"rankdir=BT;\n";
@@ -37,29 +32,11 @@ void show_meta_depends_graphviz(
 
 }
 
-void show_node_depends_graphviz(const dag_schema & _nodes, std::string tag)
-{
-    std::stringstream node_depends_log;
-    node_depends_log<<"\ndigraph "<<tag<<"{\n";
-    node_depends_log<<"rankdir=BT;\n";
-    node_depends_log<<"size=\"8,5\";\n";
-    for (auto node : _nodes) {
-        node->graphviz(node_depends_log);
-    }
-    node_depends_log<<"}";
-    auto log_str = node_depends_log.str();
-    std::regex re("galois::gparallel::none_type, |galois::gparallel::meta_info_t");
-    INFO("%s\nhttp://graphviz.it/#", tag.c_str());
-    INFO("%s", std::regex_replace(log_str, re, "").c_str());
-
-}
-
-bool graphviz(topology_t & target, std::stringstream & ss, std::string tag)
-{
+bool graphviz(topology_t& target, std::stringstream & ss, std::string tag) {
     ss<<"digraph "<<tag<<"{"<<std::endl;
     ss<<"rankdir=BT;"<<std::endl;
     ss<<"size=\"8,5\";"<<std::endl;
-    for (auto & [output, input_set] : target) {
+    for (auto& [output, input_set] : target) {
         for (auto input : input_set) {
                 ss<<"\""<<output<<"\" -> \""<<input<<"\""<<";"<<std::endl;
         }

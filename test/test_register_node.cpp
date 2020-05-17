@@ -2,11 +2,7 @@
 #include <gtest/gtest.h>
 #include <stdio.h>
 #include <algorithm>
-#include "node_deduce.h"
-#include "util.h"
-#include "meta.h"
-#include "dag_schema.h"
-#include "type_id.h"
+#include "gparallel.h"
 using namespace galois::gparallel;
 
 struct base {};
@@ -22,7 +18,7 @@ DECL_META(MetaE, base, MetaD) {};
 
 struct NodeA
 {
-    int process(produce<MetaA> b) { return 0; }
+    int process(input<MetaA> b) { return 0; }
 };
 
 struct NodeB
@@ -47,7 +43,7 @@ struct NodeE
 
 TEST(Test, register_node) {
     using namespace galois::gparallel;
-    dag_schema nodes;
-    register_node<NodeA, NodeB, NodeC, NodeD, NodeE>::reg(nodes);
-    ASSERT_EQ(setup_dag_schema(nodes), true);
+    dag_schema<base> nodes;
+    register_node<base, NodeA, NodeB, NodeC, NodeD, NodeE>::reg(nodes);
+    ASSERT_EQ(setup_dag_schema<base>(nodes), true);
 }

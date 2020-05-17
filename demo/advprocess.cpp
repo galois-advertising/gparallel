@@ -58,48 +58,53 @@ DECL_META(cpm_ordered_advlist, thread_data) {
 
 
 struct get_ctr_node {
-    void process(input<original> ori, output<ctr> ctr) {
+    static void process(input<original> ori, output<ctr> ctr) {
     }
 };
 
 struct get_cpm_node {
-    void process(input<original> ori, output<cpm> cpm) {
+    static void process(input<original> ori, output<cpm> cpm) {
 
     }
 };
 
 struct fill_node {
-    void process(input<ctr> ctr, input<cpm> cpm, input<original> ori, 
+    static void process(input<ctr> ctr, input<cpm> cpm, input<original> ori, 
         output<original_with_ctr_cpm> ori_ctr_cpm) {
 
     }
 };
 
 struct gen_ctr_node {
-    void process(input<original_with_ctr_cpm> ori_ctr_cpm, 
+    static void process(input<original_with_ctr_cpm> ori_ctr_cpm, 
         output<ctr_ordered_advlist> ctr_ordered) {
 
     }
 };
 
 struct gen_cpm_node {
-    void process(input<original_with_ctr_cpm> ori_ctr_cpm, 
+    static void process(input<original_with_ctr_cpm> ori_ctr_cpm, 
         output<cpm_ordered_advlist> cpm_ordered) {
     }
 };
 
 struct end_node {
-    void process(input<ctr_ordered_advlist>, input<cpm_ordered_advlist>) {
+    static void process(input<ctr_ordered_advlist>, input<cpm_ordered_advlist>) {
 
     }
 };
 
 int main() {
     thread_data td;
-    dag_schema nodes;
-    register_node<get_ctr_node, get_cpm_node>::reg(nodes);
-    register_node<fill_node>::reg(nodes);
-    register_node<gen_ctr_node, gen_cpm_node, end_node>::reg(nodes);
-    setup_dag_schema(nodes);
+    dag_schema<thread_data> nodes;
+    register_node<thread_data, get_ctr_node, get_cpm_node>::reg(nodes);
+    register_node<thread_data, fill_node>::reg(nodes);
+    register_node<thread_data, gen_ctr_node, gen_cpm_node, end_node>::reg(nodes);
+    setup_dag_schema<thread_data>(nodes);
+    if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
+        for (auto task : tasks.value()) {
+            INFO("Execute[%s]", task->name().c_str());
+        }
+    }
     return 0;
 }
