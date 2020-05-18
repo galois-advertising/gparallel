@@ -110,7 +110,7 @@ gparallel的主要思想有3个：
 
 <div><img align="center" width="75%" src="./image/meta.png"></div>
 
-## 依赖推导
+## 任务定义
 
 在`gparallel`中，使用一个函数表示一个具体的任务，函数的参数表示任务的`输入`和`输出`。任何一个`meta`既可以作为`输入`，也可以作为`输出`。这里引入2个模版包装器`input`和`output`。如果`meta`用`input`包装，则任务函数会将其当作一个输入数据，同理如果用`output`包装，则会当作输出。
 
@@ -141,6 +141,8 @@ if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
     }
 }
 ```
+
+<div><img align="center" width="75%" src="./image/dispatch.png"></div>
 
 # gparallel实战
 
