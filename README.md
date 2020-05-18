@@ -106,12 +106,25 @@ gparallel的主要思想有3个：
 
 现实中的系统中，数据成员一般放置在一个叫做`context`或者`thread_data`的结构体中。顾名思义，这些数据的作用范围就是一次请求，一个比较常见的设计是一次请求由线程池中的一个线程来独立负责，所以请求级别的数据，往往也是线程级别的数据。这个`context`或者`thread_data`的类型，我们定义为`meta_storage_t`，即所有meta用到的数据，都统一存储在这里。
 
-`meta`对`meta_storage_t`子集的一个指定，通过定义`getter`和`setter`来实现的，如果定义了`getter`和`setter`就代表这个`meta`中包含这个数据成员。子集之间也可以互相包含，原理与面向对象中的`继承`是一样的。同理，如果一个任务依赖于一个`meta`，则也同样依赖于这个`meta`的父`meta`。`继承`机制的主要目的是为了避免重复定义集合的元素，增加代码的可维护性。
+`meta`对`meta_storage_t`子集的一个指定，通过定义`getter`和`setter`来实现的，如果定义了`getter`和`setter`就代表这个`meta`中包含这个数据成员。子集之间也可以互相包含，原理与面向对象中的`继承`是一样的。同理，如果一个任务依赖于一个`meta`，则也同样依赖于这个`meta`的父`meta`。`继承`机制的主要目的是为了避免重复定义集合的元素，增加代码的可维护性。通过下面的例子可以理解`meta_storage_t`、`meta`和`继承`的关系。
 
-<div><img align="center" width="70%" src="./image/meta.png"></div>
+<div><img align="center" width="75%" src="./image/meta.png"></div>
 
 ## 依赖推导
 
-在`gparallel`中，使用一个函数表示一个具体的任务，任务的输入和输出用函数的参数表示。
+在`gparallel`中，使用一个函数表示一个具体的任务，函数的参数表示任务的`输入`和`输出`。任何一个`meta`既可以作为`输入`，也可以作为`输出`。这里引入2个模版包装器`input`和`output`。如果`meta`用`input`包装，则任务函数会将其当作一个输入数据，同理如果用`output`包装，则会当作输出。
+
+表示任务的函数，必须定义为类的静态成员函数，函数名字必须为`process`，返回类型为`void`。例如：
+
+```cpp
+struct DemoNode {
+    void process(input<meta_a> a, input<meta_b> b, output<meta_c> c) {
+        // process code
+        c->mutable_business_c() = a->get_business_a() + b->get_business_b();
+    }
+}
+```
+上面的`DemoNode`实现了将`business_a`和`business_b`的和赋值给`business_c`的逻辑。
+`process`函数可以拥有任意多个`输入`和任意多个`输出`。其中没有`输入`的节点作为起始节点之一，没有`输出`的节点作为终止节点之一。
 
 ## 任务调度
