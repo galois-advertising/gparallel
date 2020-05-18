@@ -108,7 +108,7 @@ gparallel的主要思想有3个：
 
 `meta`对`meta_storage_t`子集的一个指定，通过定义`getter`和`setter`来实现的，如果定义了`getter`和`setter`就代表这个`meta`中包含这个数据成员。子集之间也可以互相包含，原理与面向对象中的`继承`是一样的。同理，如果一个任务依赖于一个`meta`，则也同样依赖于这个`meta`的父`meta`。`继承`机制的主要目的是为了避免重复定义集合的元素，增加代码的可维护性。
 
-<img align="center" width="70%" src="./image/meta.png">
+<div><img align="center" width="70%" src="./image/meta.png"></div>
 
 ## 依赖推导
 
