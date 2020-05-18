@@ -128,3 +128,19 @@ struct DemoNode {
 `process`函数可以拥有任意多个`输入`和任意多个`输出`。其中没有`输入`的节点作为起始节点之一，没有`输出`的节点作为终止节点之一。
 
 ## 任务调度
+
+通过`register_node`函数将所有节点注册到`DAG`中后，使用`setup_dag_schema`函数可自动实现节点依赖分析以及`DAG`生成。针对生成的`DAG`进行`拓扑排序`，就能得到任务调度顺序。后面可根据具体情况，实现多线程或者多协程调度。
+
+```cpp
+dag_schema<thread_data> nodes;
+register_node<thread_data, node_a, node_b, node_c ...>::reg(nodes);
+setup_dag_schema<thread_data>(nodes);
+if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
+    for (auto task : tasks.value()) {
+        task->mutable_executor()(&td);
+    }
+}
+```
+
+# gparallel实战
+
