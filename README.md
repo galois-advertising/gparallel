@@ -142,7 +142,7 @@ if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
 }
 ```
 
-<div><img align="center" width="75%" src="./image/dispatch.png"></div>
+<div><img align="center" src="./image/dispatch.png"></div>
 
 # gparallelʵս
 
