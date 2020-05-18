@@ -174,21 +174,17 @@ public:
 };
 ```
 
-根据问题的描述，我们可以很容易总结出5个子流程：
-
-* 获取CTR值
-* 获取CPM值
-* 填充字段
-* 生成CTR排序队列
-* 生成CPM排序队列
+根据问题的描述，我们可以很容易总结出5个子流程，每个子流程都对应一个数据处理节点：
 
 同理，每个子流程的输入于输出可以定义为：
 流程|节点名称| 输入|  输出  
 -|-|-|-
-获取CTR值|  get_ctr_node|  advs_original| ctr_data| 
-获取CPM值|  get_cpm_node| advs_original| cpm_data|
-填充字段|  fill_node|  advs_original\ctr_data\cpm_data| advs_original[ filled ]|
-生成CTR排序队列| gen_ctr_node|  advs_original[ filled ]| advs_ctr_ordered|
-生成CPM排序队列| gen_cpm_node|  advs_original[ filled ]| advs_cpm_ordered|
+获取CTR值| get_ctr_node| advs_original| ctr_data| 
+获取CPM值| get_cpm_node| advs_original| cpm_data|
+填充字段| fill_node| advs_original & ctr_data & cpm_data| advs_original(filled)|
+生成CTR排序队列| gen_ctr_node| advs_original(filled)| advs_ctr_ordered|
+生成CPM排序队列| gen_cpm_node| advs_original(filled)| advs_cpm_ordered|
+
+![metas](./images/metas.png)
 
 
