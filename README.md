@@ -146,3 +146,31 @@ if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
 
 # gparallel实战
 
+在本小结中，会从一个现实的场景来描述`gparallel`的使用逻辑。
+
+> 问题描述：对一个指定的广告队列，分别请求其`CTR`(点击率)值和`CPM`(千次展示成本)并填充到广告的对应字段，最后分别按照`CTR`和`CPM`进行排序后生成2个新的广告队列供下游使用。
+
+上述流程是广告检索系统里面一个比较典型的逻辑，完整的代码在[./demo/advprocess.cpp](./demo/advprocess.cpp)。
+
+我们首先梳理一下所需要用到的数据对象：
+数据名称 | 类型 |  含义  
+-|-|-
+advs_original|  advlist_t |  原始的广告队列 |
+ctr_data |  advlist_t | 模型返回的ctr数据|
+cpm_data |  advlist_t |  模型返回的cpm数据|
+advs_ctr_ordered | ctr_response_t |  输出的ctr排序的广告队列|
+advs_cpm_ordered | cpm_response_t |  输出的cpm排序的广告队列|
+
+根据上面的定义，我们定义`meta_storage_t`：
+
+```cpp
+class thread_data {
+public:
+    advlist_t advs_original;
+    advlist_t advs_ctr_ordered;
+    advlist_t advs_cpm_ordered;
+    ctr_response_t ctr_data;
+    cpm_response_t cpm_data;
+};
+```
+
