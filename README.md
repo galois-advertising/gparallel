@@ -176,7 +176,6 @@ public:
 
 根据问题的描述，我们可以很容易总结出5个子流程，每个子流程都对应一个数据处理节点：
 
-<div>
 <table width="60%">
     <thead>
         <tr>
@@ -204,9 +203,7 @@ public:
             <td>advs_original*</td><td>advs_cpm_ordered</td>
         </tr>
     </tbody>
-</table>
-<img width="40%" src="./image/metas.png">
-</div>
+</table><img width="40%" src="./image/metas.png">
 
 
 
