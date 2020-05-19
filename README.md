@@ -197,11 +197,11 @@ public:
             <td>advs_original(filled)</td>
         </tr>
         <tr>
-            <td>生成CTR排序队列</td><td>gen_ctr_node</td><td>advs_original(filled)</td>
+            <td>生成CTR<br>排序队列</td><td>gen_ctr_node</td><td>advs_original(filled)</td>
             <td>advs_ctr_ordered</td>
         </tr>
         <tr>
-            <td>生成CPM排序队列</td><td>gen_cpm_node</td>
+            <td>生成CPM<br>排序队列</td><td>gen_cpm_node</td>
             <td>advs_original(filled)</td><td>advs_cpm_ordered</td>
         </tr>
     </tbody>
