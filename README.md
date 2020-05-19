@@ -193,7 +193,7 @@ public:
         </tr>
         <tr>
             <td>Ìî³ä×Ö¶Î</td><td>fill_node</td>
-            <td>advs_original &amp; <br>ctr_data &amp; <br>cpm_data</td>
+            <td>advs_original <br>ctr_data <br>cpm_data</td>
             <td>advs_original*</td>
         </tr>
         <tr>
@@ -206,7 +206,7 @@ public:
         </tr>
     </tbody>
 </table>
-<img align="right" width="40%" src="./image/metas.png">
+<img align="right" width="35%" src="./image/metas.png">
 <center>
 
 
