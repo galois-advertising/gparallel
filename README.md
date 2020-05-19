@@ -205,7 +205,7 @@ public:
         </tr>
     </tbody>
 </table>
-<img width="60%" src="./image/metas.png">
+<img width="40%" src="./image/metas.png">
 </div>
 
 
