@@ -142,7 +142,7 @@ if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
 }
 ```
 
-<div><img align="center" src="./image/dispatch.png"></div>
+<center><img align="center" src="./image/dispatch.png"></center>
 
 # gparallel实战
 
@@ -177,14 +177,37 @@ public:
 根据问题的描述，我们可以很容易总结出5个子流程，每个子流程都对应一个数据处理节点：
 
 同理，每个子流程的输入于输出可以定义为：
-流程|节点名称| 输入|  输出  
--|-|-|-
-获取CTR值| get_ctr_node| advs_original| ctr_data| 
-获取CPM值| get_cpm_node| advs_original| cpm_data|
-填充字段| fill_node| advs_original & ctr_data & cpm_data| advs_original(filled)|
-生成CTR排序队列| gen_ctr_node| advs_original(filled)| advs_ctr_ordered|
-生成CPM排序队列| gen_cpm_node| advs_original(filled)| advs_cpm_ordered|
+<center>
+<table>
+    <thead>
+        <tr>
+            <th>流程</th><th>节点名称</th><th>输入</th><th>输出</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>获取CTR值</td><td>get_ctr_node</td><td>advs_original</td><td>ctr_data</td>
+        </tr>
+        <tr>
+            <td>获取CPM值</td><td>get_cpm_node</td><td>advs_original</td><td>cpm_data</td>
+        </tr>
+        <tr>
+            <td>填充字段</td><td>fill_node</td>
+            <td>advs_original &amp; ctr_data &amp; cpm_data</td>
+            <td>advs_original(filled)</td>
+        </tr>
+        <tr>
+            <td>生成CTR排序队列</td><td>gen_ctr_node</td><td>advs_original(filled)</td>
+            <td>advs_ctr_ordered</td>
+        </tr>
+        <tr>
+            <td>生成CPM排序队列</td><td>gen_cpm_node</td>
+            <td>advs_original(filled)</td><td>advs_cpm_ordered</td>
+        </tr>
+    </tbody>
+</table>
+<center>
 
-<img align="right" width="30%" src="./image/metas.png">
+<img align="right" width="50%" src="./image/metas.png">
 
 
