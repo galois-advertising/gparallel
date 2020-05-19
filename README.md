@@ -176,8 +176,7 @@ public:
 
 根据问题的描述，我们可以很容易总结出5个子流程，每个子流程都对应一个数据处理节点：
 
-同理，每个子流程的输入于输出可以定义为：
-<center>
+<img align="left" width="35%" src="./image/metas.png">
 <table>
     <thead>
         <tr>
@@ -206,8 +205,6 @@ public:
         </tr>
     </tbody>
 </table>
-<img align="right" width="35%" src="./image/metas.png">
-<center>
 
 
 
