@@ -175,22 +175,9 @@ public:
 ```
 
 根据问题的描述，我们可以很容易总结出5个子流程，每个子流程都对应一个数据处理节点：
-<style>
-#container {
-  height: 100%;
-  width: 100%;
-  display: flex;
-}
-#leftThing {
-  width: 60%;
-}
-#rightThing {
-  width: 40%;
-}
-</style>
 
-<div id="container">
-<table id="leftThing">
+<div>
+<table width="60%">
     <thead>
         <tr>
             <th>流程</th><th>节点名称</th><th>输入</th><th>输出</th>
@@ -218,7 +205,7 @@ public:
         </tr>
     </tbody>
 </table>
-<img id="rightThing" src="./image/metas.png">
+<img width="60%" src="./image/metas.png">
 </div>
 
 
