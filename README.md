@@ -194,20 +194,20 @@ public:
         <tr>
             <td>填充字段</td><td>fill_node</td>
             <td>advs_original &amp; <br>ctr_data &amp; <br>cpm_data</td>
-            <td>advs_original(filled)</td>
+            <td>advs_original*</td>
         </tr>
         <tr>
-            <td>生成CTR<br>排序队列</td><td>gen_ctr_node</td><td>advs_original(filled)</td>
+            <td>生成CTR<br>排序队列</td><td>gen_ctr_node</td><td>advs_original*</td>
             <td>advs_ctr_ordered</td>
         </tr>
         <tr>
             <td>生成CPM<br>排序队列</td><td>gen_cpm_node</td>
-            <td>advs_original(filled)</td><td>advs_cpm_ordered</td>
+            <td>advs_original*</td><td>advs_cpm_ordered</td>
         </tr>
     </tbody>
 </table>
+<img align="right" width="40%" src="./image/metas.png">
 <center>
 
-<img align="right" width="50%" src="./image/metas.png">
 
 
