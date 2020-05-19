@@ -185,6 +185,6 @@ public:
 生成CTR排序队列| gen_ctr_node| advs_original(filled)| advs_ctr_ordered|
 生成CPM排序队列| gen_cpm_node| advs_original(filled)| advs_cpm_ordered|
 
-<div><img align="center" width="90%" src="./image/metas.png"></div>
+<center><img align="center" width="80%" src="./image/metas.png"></center>
 
 
