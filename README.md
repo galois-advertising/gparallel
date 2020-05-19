@@ -174,7 +174,8 @@ public:
 };
 ```
 
-根据问题的描述，我们可以很容易总结出5个子流程，每个子流程都对应一个数据处理节点： <img width="40%" src="./image/metas.png"><table width="60%">
+根据问题的描述，我们可以很容易总结出5个子流程，每个子流程都对应一个数据处理节点： <img  align="left" width="40%" src="./image/metas.png">
+<table width="60%">
     <thead>
         <tr>
             <th>流程</th><th>节点名称</th><th>输入</th><th>输出</th>
