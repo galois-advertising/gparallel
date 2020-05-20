@@ -31,13 +31,13 @@ DECL_META(original, thread_data) {
     }
 };
 
-DECL_META(ctr, thread_data, original) {
+DECL_META(ctr, thread_data) {
     ctr_response_t & mutable_ctr_data() {
         return this->mutable_data()->ctr_data;
     }
 };
 
-DECL_META(cpm, thread_data, original) {
+DECL_META(cpm, thread_data) {
     cpm_response_t & mutable_cpm_data() {
         return this->mutable_data()->cpm_data;
     }
