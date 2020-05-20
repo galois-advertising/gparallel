@@ -211,6 +211,6 @@ public:
 ![demo_meta_1.png](./image/demo_meta_2.png)
 
 `fill_node`节点对广告队列进行数据填充，这里注意，节点的输入中有meta`original`，输出中有meta`original_with_ctr_cpm`。这2个meta其实本质上都是`advs_original`的封装，但是因为属于2个阶段(即填充前和填充后)，所以分别用2个不同的meta来表示，在实现上，我们可以直接使用继承功能，复用meta`original`。
-![demo_meta_1.png](./image/demo_meta_2.png)
+![demo_meta_2.png](./image/demo_meta_2.png)
 
 `gen_ctr_node`和`gen_cpm_node`的输入都包含meta`original_with_ctr_cpm`，表示其依赖于填充后的`advs_original`而不是填充前。
