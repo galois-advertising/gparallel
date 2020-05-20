@@ -110,7 +110,7 @@ gparallel的主要思想有3个：
 
 <div><img align="center" width="75%" src="./image/meta.png"></div>
 
-## 依赖推导
+## 任务定义
 
 在`gparallel`中，使用一个函数表示一个具体的任务，函数的参数表示任务的`输入`和`输出`。任何一个`meta`既可以作为`输入`，也可以作为`输出`。这里引入2个模版包装器`input`和`output`。如果`meta`用`input`包装，则任务函数会将其当作一个输入数据，同理如果用`output`包装，则会当作输出。
 
@@ -142,5 +142,67 @@ if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
 }
 ```
 
+<center><img align="center" src="./image/dispatch.png"></center>
+
 # gparallel实战
+
+在本小结中，会从一个现实的场景来描述`gparallel`的使用逻辑。
+
+> 问题描述：对一个指定的广告队列，分别请求其`CTR`(点击率)值和`CPM`(千次展示成本)并填充到广告的对应字段，最后分别按照`CTR`和`CPM`进行排序后生成2个新的广告队列供下游使用。
+
+上述流程是广告检索系统里面一个比较典型的逻辑，完整的代码在[./demo/advprocess.cpp](./demo/advprocess.cpp)。
+
+我们首先梳理一下所需要用到的数据对象：
+数据名称 | 类型 |  含义  
+-|-|-
+advs_original|  advlist_t |  原始的广告队列 |
+ctr_data |  advlist_t | 模型返回的ctr数据|
+cpm_data |  advlist_t |  模型返回的cpm数据|
+advs_ctr_ordered | ctr_response_t |  输出的ctr排序的广告队列|
+advs_cpm_ordered | cpm_response_t |  输出的cpm排序的广告队列|
+
+根据上面的定义，我们定义`meta_storage_t`：
+
+```cpp
+class thread_data {
+public:
+    advlist_t advs_original;
+    advlist_t advs_ctr_ordered;
+    advlist_t advs_cpm_ordered;
+    ctr_response_t ctr_data;
+    cpm_response_t cpm_data;
+};
+```
+
+根据问题的描述，我们可以很容易总结出5个子流程，每个子流程都对应一个数据处理节点： <img  align="left" width="40%" src="./image/metas.png">
+<table width="60%">
+    <thead>
+        <tr>
+            <th>流程</th><th>节点名称</th><th>输入</th><th>输出</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>获取CTR值</td><td>get_ctr_node</td><td>advs_original</td><td>ctr_data</td>
+        </tr>
+        <tr>
+            <td>获取CPM值</td><td>get_cpm_node</td><td>advs_original</td><td>cpm_data</td>
+        </tr>
+        <tr>
+            <td>填充字段</td><td>fill_node</td>
+            <td>advs_original <br>ctr_data <br>cpm_data</td>
+            <td>advs_original*</td>
+        </tr>
+        <tr>
+            <td>生成CTR<br>排序队列</td><td>gen_ctr_node</td><td>advs_original*</td>
+            <td>advs_ctr_ordered</td>
+        </tr>
+        <tr>
+            <td>生成CPM<br>排序队列</td><td>gen_cpm_node</td>
+            <td>advs_original*</td><td>advs_cpm_ordered</td>
+        </tr>
+    </tbody>
+</table>
+
+
 
