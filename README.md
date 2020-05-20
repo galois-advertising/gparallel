@@ -214,3 +214,46 @@ public:
 ![demo_meta_b.png](./image/demo_meta_b.png)
 
 `gen_ctr_node`和`gen_cpm_node`的输入都包含meta`original_with_ctr_cpm`，表示其依赖于填充后的`advs_original`而不是填充前。
+
+在所有的meta和node都定义好以后，我们可以通过下面流程进行任务调度。
+首先我们需要申请相应的内存来存储我们所有的数据变量，这里我们申请一个`thread_data`的实例：
+
+```cpp
+thread_data td{{advertisement(1), advertisement(2), advertisement(3)}, {},{},{},{}};
+```
+
+我们还需要一个`节点容器`，来存放所有的数据处理节点：
+
+```cpp
+dag_schema<thread_data> nodes;
+```
+
+接下来我们将所有的`节点`，注册到刚才申请的`节点容器`中。
+
+```cpp
+register_node<thread_data, get_ctr_node, get_cpm_node>::reg(nodes);
+register_node<thread_data, fill_node>::reg(nodes);
+register_node<thread_data, gen_ctr_node, gen_cpm_node, end_node>::reg(nodes);
+```
+
+`register_node`模版负责注册节点到容器`nodes`中，其中第一个模版参数是我们所有数据最终存储的类，也就是`meta_storage_t`。剩余任意多个模版参数分别为各个node。`reg`函数的输入参数为`dag_schema`类型的节点容器实例。
+
+接下来推导所有节点的依赖关系：
+
+```cpp
+setup_dag_schema<thread_data>(nodes);
+```
+
+最后，我们对DAG上面的所有节点进行`拓扑排序`，并且按照排序后的顺序依此进行调用：
+
+```cpp
+if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
+        for (auto task : tasks.value()) {
+            INFO("Execute[%s]", task->name().c_str());
+            task->mutable_executor()(&td);
+        }
+    }
+```
+
+
+
