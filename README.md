@@ -204,13 +204,13 @@ public:
     </tbody>
 </table>
 
-<div>
 
 可以看到原始输入的广告队列是`advs_original`，这里我们将封装为meta`original`。
 `get_ctr_node`节点和`get_cpm_node`节点根据meta`original`分别获取`ctr_data`和`cpm_data`，用meta`ctr`和meta`cpm`来封装，这2个meta继承于meta`original`。
 `fill_node`节点对广告队列进行数据填充，这里注意，节点的输入中有meta`original`，输出为meta`original_with_ctr_cpm`。这2个meta其实都封装了`advs_original`，但是因为属于2个节点，即填充前和填充后，所以分别用2个不同的meta来表示。
-`gen_ctr_node`和`gen_cpm_node`的输入都包含meta`original_with_ctr_cpm`，表示其依赖于填充后的`advs_original`而不是填充前。<img  align="right" width="50%" src="./image/metas.png">
-<div>
+`gen_ctr_node`和`gen_cpm_node`的输入都包含meta`original_with_ctr_cpm`，表示其依赖于填充后的`advs_original`而不是填充前。
+
+<img align="center" width="70%" src="./image/metas.png">
 
 
 
