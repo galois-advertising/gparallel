@@ -124,7 +124,7 @@ gparallel的主要思想有3个：
 
 通过定义`getter`和`setter`可以是先对子集元素的指定，如果定义了`getter`和`setter`就代表这个`meta`中包含这个数据成员。子集之间也可以互相包含，原理与面向对象中的`继承`是一样的。同理，如果一个任务依赖于一个`meta`，则也同样依赖于这个`meta`的父`meta`。`继承`机制的主要目的是为了避免重复定义集合的元素，增加代码的可维护性。通过下面的例子可以理解`meta_storage_t`、`meta`和`继承`的关系。
 
-<div><img align="center" width="75%" src="./image/meta.png"></div>
+<div><img align="center" width="100%" src="./image/meta.png"></div>
 
 通过上图可以看到，`meta_common`包含了`thread_data::id`，`meta_a`同时包含了`thread_data::business_a`和`meta_common`的所有元素。`meta_b`同时包含了`thread_data::business_b`和`meta_common`的所有元素。
 
@@ -197,7 +197,7 @@ public:
 };
 ```
 
-接下来我们根据不同的业务，将集合划分为不同的子集，每个子集就是一个`meta`，一个元素可以同时属于多个`meta`，`meta`与`meta`，之间可以互相包含。
+接下来我们根据不同的业务，将集合划分为不同的子集，每个子集就是一个`meta`，一个元素可以同时属于多个`meta`，`meta`与`meta`之间可以互相包含。
 根据问题的描述，我们可以很容易总结出5个子流程，每个子流程都对应一个数据处理节点： 
 <table width="60%">
     <thead>
@@ -359,7 +359,7 @@ register_node<thread_data, gen_ctr_node, gen_cpm_node, end_node>::reg(nodes);
 setup_dag_schema<thread_data>(nodes);
 ```
 
-最后，我们对DAG上面的所有节点进行`拓扑排序`，并且按照排序后的顺序依此进行调用：
+最后，我们对DAG上面的所有节点进行`拓扑排序`，并且按照排序后的顺序依次进行调用：
 
 ```cpp
 if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
