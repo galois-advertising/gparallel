@@ -152,7 +152,10 @@ if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
 
 上述流程是广告检索系统里面一个比较典型的逻辑，完整的代码在[./demo/advprocess.cpp](./demo/advprocess.cpp)。
 
+## 数据划分
+
 我们首先梳理一下所需要用到的数据对象：
+
 数据名称 | 类型 |  含义  
 -|-|-
 advs_original|  advlist_t |  原始的广告队列 |
@@ -161,7 +164,9 @@ cpm_data |  advlist_t |  模型返回的cpm数据|
 advs_ctr_ordered | ctr_response_t |  输出的ctr排序的广告队列|
 advs_cpm_ordered | cpm_response_t |  输出的cpm排序的广告队列|
 
-根据上面的定义，我们定义`meta_storage_t`：
+根据上面的定义，我们定义数据集合，业务执行需要用到的所有数据都放在`thread_data`这个集合中：
+
+![demo_thread_data.png](./image/demo_thread_data.png)
 
 ```cpp
 class thread_data {
@@ -174,6 +179,7 @@ public:
 };
 ```
 
+接下来我们根据不同的业务，将集合划分为不同的子集，每个子集就是一个`meta`，一个元素可以同时属于多个`meta`，`meta`与`meta`，之间可以互相包含。
 根据问题的描述，我们可以很容易总结出5个子流程，每个子流程都对应一个数据处理节点： 
 <table width="60%">
     <thead>
@@ -208,12 +214,17 @@ public:
 可以看到原始输入的广告队列是`advs_original`，这里我们将其封装为meta`original`。
 
 `get_ctr_node`节点和`get_cpm_node`节点通过meta`original`分别获取`ctr_data`和`cpm_data`两份数据，这两份数据我们用meta`ctr`和meta`cpm`来封装。
-![demo_meta_a.png](./image/demo_meta_a.png)
 
 `fill_node`节点对广告队列进行数据填充，这里注意，节点的输入中有meta`original`，输出中有meta`original_with_ctr_cpm`。这2个meta其实本质上都是`advs_original`的封装，但是因为属于2个阶段(即填充前和填充后)，所以分别用2个不同的meta来表示，在实现上，我们可以直接使用继承功能，复用meta`original`。
-![demo_meta_b.png](./image/demo_meta_b.png)
 
 `gen_ctr_node`和`gen_cpm_node`的输入都包含meta`original_with_ctr_cpm`，表示其依赖于填充后的`advs_original`而不是填充前。
+
+这样就可以根据不同的业务逻辑，把`thread_data`集合划分为不同的`meta`，每个业务只需要关注子集需要用到哪些`meta`，生成哪些`meta`即可。
+![demo_meta.png](./image/demo_meta.png)
+
+## 任务定义
+
+## 任务调度
 
 在所有的meta和node都定义好以后，我们可以通过下面流程进行任务调度。
 首先我们需要申请相应的内存来存储我们所有的数据变量，这里我们申请一个`thread_data`的实例：
@@ -248,11 +259,11 @@ setup_dag_schema<thread_data>(nodes);
 
 ```cpp
 if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
-        for (auto task : tasks.value()) {
-            INFO("Execute[%s]", task->name().c_str());
-            task->mutable_executor()(&td);
-        }
+    for (auto task : tasks.value()) {
+        INFO("Execute[%s]", task->name().c_str());
+        task->mutable_executor()(&td);
     }
+}
 ```
 
 
