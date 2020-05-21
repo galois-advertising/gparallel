@@ -59,11 +59,12 @@ TARGET_LINK_LIBRARIES(your-bin common gparallel)
 
 # 背景介绍
 
-对于单体型业务系统，在系统建立初期，系统业务还比较简单，每次`检索请求`到来时需要执行的业务逻辑也比较单一，此时请求级别的`数据变量`比较少，这些变量的赋值顺序与依赖关系也一目了然，整个数据检索是一个完全线性的一个过程，没有任何`异步操作`。
+对于单体型业务系统，在系统建立初期，系统业务还比较简单，每次`检索请求`到来时需要执行的业务逻辑也比较单一，此时请求级别的`数据变量`比较少，这些变量的赋值顺序与依赖关系也一目了然，系统很容易维护。
 
-但是，随着开发的人越来越多，大家都在上面加入自己的`业务逻辑`和新的`数据变量`，此时变量增加到了几百个，变量之间的赋值顺序与依赖关系开始变得复杂，一些代码逻辑甚至打破了已有的流程结构（俗称飞线），整个系统难以理解。有一个人能说清楚这些变量之间的依赖关系以及这些业务逻辑之间的执行顺序，每次新的开发都如履薄冰，每次排查问题都耗时耗力。
+但是，随着开发的人越来越多，大家都在上面加入自己的`业务逻辑`和新的`数据变量`，此时变量增加到了几百个，变量之间的赋值顺序与依赖关系开始变得复杂，一些代码逻辑甚至打破了已有的流程结构（俗称飞线），整个系统难以理解。没有一个人能说清楚这些变量之间的依赖关系以及这些业务逻辑之间的执行顺序，每次新的开发都如履薄冰，每次排查问题都耗时耗力。
 
-对于多人参与，迭代密集的系统，如何更合理地存放各类型的数据，如何更好地实现繁杂的业务逻辑，这就是为需要`gparallel`的理由.
+对于多人参与，迭代密集的系统，如何更合理地组织各类型的数据，如何更好地实现繁杂的业务逻辑，这就是为需要`gparallel`的理由.
+
 
 > `gparallel`是一款基于`DAG(Directed acyclic graph)`的并且支持自动依赖推导的任务调度框架。
 
@@ -99,13 +100,13 @@ gparallel的主要思想有3个：
 
 ## 数据划分
 
-在检索系统中，`数据`一般就是指检索过程中用来存储中间结果和最终结果的变量，比如存储广告的`std::list`，存储标题的`std::string`。gparallel主要从2个角度去进行划分：
+在检索系统中，`数据`一般就是指检索过程中用来存储中间结果和最终结果的变量，比如存储广告的`std::list`，存储标题的`std::string`。gparallel主要从2个角度进行划分：
 
 * `按照业务逻辑`：把不同业务逻辑所需要用到的数据划分为不同的集合。比如有不同的广告营销产品，各自都有自己的User、Plan和Ad的集合，以及一些存储数中间结果的变量。为了方便描述，我们用大写字母来表示按照业务逻辑划分出来的数据即可，例如`A`、`B`、`C`等等。
 
-* `按照数据状态`：更进一步，对于服务于同一个业务的数据集合(A)，在不同的阶段，又可以划分为不同的状态。例如一个广告队列，初始状态是空(empty)，经过填充以后有N条广告(inited)，又经过了一次按照CTR的排序(ranked)，最后经历了一次截断(cut)，那么对应四个状态`A_empty`，`A_inited`，`A_ranked`，`A_cut`。
+* `按照数据状态`：更进一步，对于服务于同一个业务的数据集合(A)，在不同的阶段，又可以划分为不同的状态。例如一个广告队列，初始状态是空(empty)，经过填充以后有N条广告(inited)，又经过了一次按照CTR的排序(ranked)，最后经历了一次截断(truncate)，那么对应四个状态`A_empty`，`A_inited`，`A_ranked`，`A_truncated`。
 
-为了方便理解，我们把划分出来的每个子集，叫做`meta`。前面提到的`A_empty`，`A_inited`，`A_ranked`，`A_cut`都是`meta`。在gparallel中，我们用[`DECL_META`](include/meta.h)宏来定义一个`meta`。
+为了方便理解，我们把划分出来的每个子集，叫做`meta`。前面提到的`A_empty`，`A_inited`，`A_ranked`，`A_truncate`都是`meta`。在gparallel中，我们用[`DECL_META`](include/meta.h)宏来定义一个`meta`。
 
 > meta：表示**指定业务**所需要的所有数据的集合的**数据结构**。
 
@@ -232,6 +233,77 @@ public:
 ![demo_meta.png](./image/demo_meta.png)
 
 ## 任务定义
+
+首先实现`get_ctr_node`和`get_cpm_node`这两个任务节点。
+```cpp
+struct get_ctr_node {
+    static void process(input<original> ori, output<ctr> ctr) {
+        INFO("[gparallel] get_ctr_node", "");
+        ctr->mutable_ctr_data().resize(ori->mutable_advs_original().size());
+        for (int pos = 0; pos < ori->mutable_advs_original().size(); pos++) {
+            auto & adv = ori->mutable_advs_original()[pos];
+            ctr->mutable_ctr_data()[pos] = 0.1 * static_cast<double>(adv.id);
+        }
+    }
+};
+
+struct get_cpm_node {
+    static void process(input<original> ori, output<cpm> cpm) {
+        INFO("[gparallel] get_cpm_node", "");
+        cpm->mutable_cpm_data().resize(ori->mutable_advs_original().size());
+        for (int pos = 0; pos < ori->mutable_advs_original().size(); pos++) {
+            auto & adv = ori->mutable_advs_original()[pos];
+            cpm->mutable_cpm_data()[pos] = 100.2 * static_cast<double>(adv.id);
+        }
+
+    }
+};
+```
+这两个任务的功能相似，都是根据`original`中存储的所有广告，获取对应的`点击率`和`千次展示成本`数据，并且分别保存到`ctr`和`cpm`这两个meta。这里为了简化，我们取一些随机的数字作为`ctr`作为`cpm`。现实中往往需要同步或者异步请求模型服务器来获取。
+
+接下来实现`fill_node`。
+```cpp
+struct fill_node {
+    static void process(input<ctr> ctr, input<cpm> cpm, input<original> ori, 
+        output<original_with_ctr_cpm> ori_ctr_cpm) {
+        INFO("[gparallel] fill_node", "");
+        for (int pos = 0; pos < ori->mutable_advs_original().size(); pos++) {
+            auto & adv = ori_ctr_cpm->mutable_advs_original()[pos];
+            adv.ctr = ctr->mutable_ctr_data()[pos];
+            adv.cpm = cpm->mutable_cpm_data()[pos];
+            INFO("[gparallel] ori_ctr_cpm adv:[%d] ctr:[%lf] cpm:[%lf]", adv.id, adv.ctr, adv.cpm);
+        }
+    }
+};
+```
+`fill_node`节点将前面`get_ctr_node`和`get_cpm_node`这两个节点的输出作为自己的输入，最后生成`original_with_ctr_cpm`。这里可以看到，`original`和`original_with_ctr_cpm`分别作为节点的输入和输出，虽然这两个meta中包含的数据都是`advs_original`，但是对应了**不同的状态**。`original`代表了`advs_original`一开始的状态，而`original_with_ctr_cpm`代表了已经填充了`ctr`作为`cpm`数据的状态。
+
+最后实现`gen_ctr_node`和`gen_cpm_node`。
+```cpp
+struct gen_ctr_node {
+    static void process(input<original_with_ctr_cpm> ori_ctr_cpm, 
+        output<ctr_ordered_advlist> ctr_ordered) {
+        INFO("[gparallel] gen_ctr_node", "");
+        ctr_ordered->mutable_advs_ctr_ordered() = ori_ctr_cpm->mutable_advs_original();
+        std::sort(ctr_ordered->mutable_advs_ctr_ordered().begin(),
+            ctr_ordered->mutable_advs_ctr_ordered().end(), 
+            [](const auto& a, const auto& b)->bool{return a.ctr > b.ctr;});
+
+    }
+};
+
+struct gen_cpm_node {
+    static void process(input<original_with_ctr_cpm> ori_ctr_cpm, 
+        output<cpm_ordered_advlist> cpm_ordered) {
+        INFO("[gparallel] gen_cpm_node", "");
+        cpm_ordered->mutable_advs_cpm_ordered() = ori_ctr_cpm->mutable_advs_original();
+        std::sort(cpm_ordered->mutable_advs_cpm_ordered().begin(),
+            cpm_ordered->mutable_advs_cpm_ordered().end(),
+            [](const auto& a, const auto& b)->bool{return a.cpm > b.cpm;});
+    }
+};
+```
+这里需要注意的是，`gen_ctr_node`和`gen_cpm_node`这两个节点，需要的是**已经填充了`ctr`作为`cpm`数据**的`advs_original`，所以输入meta必须为`original_with_ctr_cpm`。这一点对于生成正确的DAG来说非常重要。`gparallel`正是通过区分同一数据的不同阶段，来实现正确的任务调度。
 
 ## 任务调度
 
