@@ -46,6 +46,14 @@ git commit -m "Add gparallel"
 ```cmake
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/common/util/include")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/gparallel/include")
+IF (NOT TARGET gtest)
+    ADD_SUBDIRECTORY(gtest)
+    ENABLE_TESTING()
+    INCLUDE_DIRECTORIES(SYSTEM
+        ${gtest_SOURCE_DIR}
+        ${gtest_SOURCE_DIR}/include)
+ENDIF()
+
 IF (NOT TARGET common)
     ADD_SUBDIRECTORY(common)
 ENDIF()
