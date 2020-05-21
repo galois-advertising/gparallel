@@ -378,9 +378,9 @@ $ ./demo
 ```
 如果我们打开了debug日志，就可以在demo的输出中看到下面的DAG信息：
 ```
-[2020-05-21 14:24:11.082883] [0x0000000118a1edc0] [info]    [~/gparallel/include/dag_schema.h][127]node_depends_after
+[2020-05-20 23:24:11.082883] [] [info][~/gparallel/include/dag_schema.h][127]node_depends_after
 http://graphviz.it/#
-[2020-05-21 14:24:11.083212] [0x0000000118a1edc0] [info]    [~/gparallel/include/dag_schema.h][128]
+[2020-05-20 23:24:11.083212] [] [info][~/gparallel/include/dag_schema.h][128]
 digraph node_depends_after{
 rankdir=BT;
 size="8,5";
@@ -396,6 +396,31 @@ size="8,5";
 通过[http://graphviz.it/#](http://graphviz.it/#)，我们可以看到`gparallel`自动推导得到的DAG。
 
 ![demo_dag.png](./image/demo_dag.png)
+
+ 同时可以看到全部业务执行的结果：
+ ```
+[2020-05-20 23:24:11.084784] [] [info][advprocess.cpp][141]Execute[get_ctr_node]
+[2020-05-20 23:24:11.084792] [] [info][advprocess.cpp][63][gparallel] get_ctr_node
+[2020-05-20 23:24:11.084866] [] [info][advprocess.cpp][141]Execute[get_cpm_node]
+[2020-05-20 23:24:11.084898] [] [info][advprocess.cpp][74][gparallel] get_cpm_node
+[2020-05-20 23:24:11.084905] [] [info][advprocess.cpp][141]Execute[fill_node]
+[2020-05-20 23:24:11.084910] [] [info][advprocess.cpp][87][gparallel] fill_node
+[2020-05-20 23:24:11.084916] [] [info][advprocess.cpp][92][gparallel] ori_ctr_cpm adv:[1] ctr:[0.100000] cpm:[100.200000]
+[2020-05-20 23:24:11.084920] [] [info][advprocess.cpp][92][gparallel] ori_ctr_cpm adv:[2] ctr:[0.200000] cpm:[200.400000]
+[2020-05-20 23:24:11.084956] [] [info][advprocess.cpp][92][gparallel] ori_ctr_cpm adv:[3] ctr:[0.300000] cpm:[300.600000]
+[2020-05-20 23:24:11.084966] [] [info][advprocess.cpp][141]Execute[gen_ctr_node]
+[2020-05-20 23:24:11.084992] [] [info][advprocess.cpp][100][gparallel] gen_ctr_node
+[2020-05-20 23:24:11.085003] [] [info][advprocess.cpp][141]Execute[gen_cpm_node]
+[2020-05-20 23:24:11.085007] [] [info][advprocess.cpp][112][gparallel] gen_cpm_node
+[2020-05-20 23:24:11.085011] [] [info][advprocess.cpp][141]Execute[end_node]
+[2020-05-20 23:24:11.085015] [] [info][advprocess.cpp][122][gparallel] end_node
+[2020-05-20 23:24:11.085046] [] [info][advprocess.cpp][124]CPM ordered:[3]
+[2020-05-20 23:24:11.085055] [] [info][advprocess.cpp][124]CPM ordered:[2]
+[2020-05-20 23:24:11.085062] [] [info][advprocess.cpp][124]CPM ordered:[1]
+[2020-05-20 23:24:11.085069] [] [info][advprocess.cpp][127]CTR ordered:[3]
+[2020-05-20 23:24:11.085076] [] [info][advprocess.cpp][127]CTR ordered:[2]
+[2020-05-20 23:24:11.085082] [] [info][advprocess.cpp][127]CTR ordered:[1]
+```
 
 
 
