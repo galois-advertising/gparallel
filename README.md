@@ -286,7 +286,7 @@ struct fill_node {
 ```
 `fill_node`节点将前面`get_ctr_node`和`get_cpm_node`这两个节点的输出作为自己的输入，最后生成`original_with_ctr_cpm`。这里可以看到，`original`和`original_with_ctr_cpm`分别作为节点的输入和输出，虽然这两个meta中包含的数据都是`advs_original`，但是对应了**不同的状态**。`original`代表了`advs_original`一开始的状态，而`original_with_ctr_cpm`代表了已经填充了`ctr`作为`cpm`数据的状态。
 
-最后实现`gen_ctr_node`和`gen_cpm_node`。
+然后实现`gen_ctr_node`和`gen_cpm_node`。
 ```cpp
 struct gen_ctr_node {
     static void process(input<original_with_ctr_cpm> ori_ctr_cpm, 
@@ -312,6 +312,21 @@ struct gen_cpm_node {
 };
 ```
 这里需要注意的是，`gen_ctr_node`和`gen_cpm_node`这两个节点，需要的是**已经填充了`ctr`作为`cpm`数据**的`advs_original`，所以输入meta必须为`original_with_ctr_cpm`。这一点对于生成正确的DAG来说非常重要。`gparallel`正是通过区分同一数据的不同阶段，来实现正确的任务调度。
+
+最后，`end_node`对所有的结果进行汇总，并反馈给下游。
+```cpp
+struct end_node {
+    static void process(input<ctr_ordered_advlist> ctr, input<cpm_ordered_advlist> cpm) {
+        INFO("[gparallel] end_node", "");
+        for (auto& adv : cpm->mutable_advs_cpm_ordered()) {
+            INFO("CPM ordered:[%d]", adv.id);
+        }
+        for (auto& adv : ctr->mutable_advs_ctr_ordered()) {
+            INFO("CTR ordered:[%d]", adv.id);
+        }
+    }
+};
+```
 
 ## 任务调度
 
@@ -354,6 +369,37 @@ if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
     }
 }
 ```
+编译执行：
+```shell
+$ cd build
+$ cmake ../
+$ make demo
+$ ./demo
+```
+如果我们打开了debug日志，就可以在demo的输出中看到下面的DAG信息：
+```
+[2020-05-21 14:24:11.082883] [0x0000000118a1edc0] [info]    [~/gparallel/include/dag_schema.h][127]node_depends_after
+http://graphviz.it/#
+[2020-05-21 14:24:11.083212] [0x0000000118a1edc0] [info]    [~/gparallel/include/dag_schema.h][128]
+digraph node_depends_after{
+rankdir=BT;
+size="8,5";
+"fill_node" -> "get_ctr_node";
+"fill_node" -> "get_cpm_node";
+"gen_ctr_node" -> "fill_node";
+"gen_cpm_node" -> "fill_node";
+"end_node" -> "gen_ctr_node";
+"end_node" -> "gen_cpm_node";
+}
+```
+
+通过[http://graphviz.it/#](http://graphviz.it/#)，我们可以看到`gparallel`自动推导得到的DAG。
+
+![demo_dag.png](./image/demo_dag.png)
+
+
+
+
 
 
 
