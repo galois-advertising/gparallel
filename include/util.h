@@ -8,10 +8,8 @@
 #include <iostream>
 #include <cxxabi.h>
 #include "type_id.h"
-#include "varlist.h"
 
-namespace galois::gparallel 
-{
+namespace galois::gparallel {
 
 struct none_type {};
 struct auto_type {};

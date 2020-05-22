@@ -114,19 +114,26 @@ gparallel的主要思想有3个：
 
 * `按照数据状态`：更进一步，对于服务于同一个业务的数据集合(A)，在不同的阶段，又可以划分为不同的状态。例如一个广告队列，初始状态是空(empty)，经过填充以后有N条广告(inited)，又经过了一次按照CTR的排序(ranked)，最后经历了一次截断(truncate)，那么对应四个状态`A_empty`，`A_inited`，`A_ranked`，`A_truncated`。
 
-为了方便理解，我们把划分出来的每个子集，叫做`meta`。前面提到的`A_empty`，`A_inited`，`A_ranked`，`A_truncate`都是`meta`。在gparallel中，我们用[`DECL_META`](include/meta.h)宏来定义一个`meta`。
+为了方便理解，我们把划分出来的每个子集（包含不同的阶段），叫做`meta`。前面提到的`A_empty`，`A_inited`，`A_ranked`，`A_truncate`都是`meta`。在gparallel中，我们用[`DECL_META`](include/meta.h)宏来定义一个`meta`。
 
-> meta：表示**指定业务**所需要的所有数据的集合的**数据结构**。
+> meta：用来描述**指定业务**所需要的所有数据（指定节点）的集合的一种**数据结构**。
 
 理解gparallel对数据的2层递进划分方式非常重要，因为gparallel的DAG自动推导过程正是依赖于不同的meta。
 
-现实中的系统中，数据成员一般放置在一个叫做`context`或者`thread_data`的结构体中。顾名思义，这些数据的作用范围就是一次请求，一个比较常见的设计是一次请求由线程池中的一个线程来独立负责，所以请求级别的数据，往往也是线程级别的数据。这个`context`或者`thread_data`的类型，我们定义为`meta_storage_t`，即所一次检索中用到的所有数据，都统一存储在这里。
+现实中的系统中，数据成员一般放置在一个叫做`context`或者`thread_data`的结构体中。顾名思义，这些数据的作用范围就是一次请求，一个比较常见的设计是一次请求由线程池中的一个线程来独立负责，所以请求级别的数据，往往也是线程级别的数据。这个`context`或者`thread_data`类型，在代码实现中通常用`meta_storage_t`来表示，即所一次检索中用到的所有数据，都统一存储在这里。
 
-通过定义`getter`和`setter`可以是先对子集元素的指定，如果定义了`getter`和`setter`就代表这个`meta`中包含这个数据成员。子集之间也可以互相包含，原理与面向对象中的`继承`是一样的。同理，如果一个任务依赖于一个`meta`，则也同样依赖于这个`meta`的父`meta`。`继承`机制的主要目的是为了避免重复定义集合的元素，增加代码的可维护性。通过下面的例子可以理解`meta_storage_t`、`meta`和`继承`的关系。
+通过定义`getter`和`setter`可以对子集需要包含的元素进行指定，如果定义了`getter`和`setter`就代表这个`meta`中包含这个数据成员。
 
-<div><img align="center" width="75%" src="./image/meta.png"></div>
+子集之间也可以互相包含，原理与面向对象中的`继承`是一样的。同理，如果一个任务依赖于一个`meta`，则也同样依赖于这个`meta`的父`meta`，`gparallel`在推导依赖时会自动将继承关系也考虑在内。`继承`机制的主要目的是为了避免重复定义集合的元素，增加代码的可维护性。在实践中，通常将很多业务公用的数据单独定义为一个`meta`，属于单独业务的`meta`，可以从前面的公共`meta`进行继承。
 
-通过上图可以看到，`meta_common`包含了`thread_data::id`，`meta_a`同时包含了`thread_data::business_a`和`meta_common`的所有元素。`meta_b`同时包含了`thread_data::business_b`和`meta_common`的所有元素。
+通过下面的例子可以理解`meta_storage_t`、`meta`和`继承`的关系。
+
+<div><img align="center" width="100%" src="./image/meta.png"></div>
+
+通过上图可以看到，所有数据被放置在`thread_data`这个对象中(`meta_storage_t`)，通过三个`meta`将`thread_data`中的数据划分为三个集合：
+* `meta_common`包含了`thread_data::id`
+* `meta_a`包含了`thread_data::business_a`并且继承了`meta_common`的所有元素。
+* `meta_b`包含了`thread_data::business_b`并且继承了`meta_common`的所有元素。
 
 ## 任务定义
 
@@ -197,7 +204,7 @@ public:
 };
 ```
 
-接下来我们根据不同的业务，将集合划分为不同的子集，每个子集就是一个`meta`，一个元素可以同时属于多个`meta`，`meta`与`meta`，之间可以互相包含。
+接下来我们根据不同的业务，将集合划分为不同的子集，每个子集就是一个`meta`，一个元素可以同时属于多个`meta`，`meta`与`meta`之间可以互相包含。
 根据问题的描述，我们可以很容易总结出5个子流程，每个子流程都对应一个数据处理节点： 
 <table width="60%">
     <thead>
@@ -359,7 +366,7 @@ register_node<thread_data, gen_ctr_node, gen_cpm_node, end_node>::reg(nodes);
 setup_dag_schema<thread_data>(nodes);
 ```
 
-最后，我们对DAG上面的所有节点进行`拓扑排序`，并且按照排序后的顺序依此进行调用：
+最后，我们对DAG上面的所有节点进行`拓扑排序`，并且按照排序后的顺序依次进行调用：
 
 ```cpp
 if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
