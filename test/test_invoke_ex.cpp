@@ -31,23 +31,27 @@ struct AA {
     float data;
     AA(float a) : data(a) {}
 };
+
 struct BB {
     int data;
     BB(int a) : data(a) {}
 };
+
 struct CC {
     float data;
     CC(float a) : data(a) {}
 };
+
 struct DD {
     int data;
     DD(int a) : data(a) {}
 };
-int fn2(AA a, BB b, CC c, DD d)
-{
+
+int fn2(AA a, BB b, CC c, DD d) {
     std::cout<<a.data<<b.data<<c.data<<d.data<<std::endl;
     return 1;
 }
+
 TEST(Test, invoke_ex2) {
     using namespace galois::gparallel;
     // any order of a,b,c,d is ok
