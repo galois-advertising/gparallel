@@ -31,14 +31,15 @@ $ ./demo
 首先将`gparallel`以及所依赖的`common`和`gtest`设置为`git submodule`。
 
 ```shell
-cd your-project
-git add submodule -b master https://github.com/galois-advertising/gparallel
-git add submodule -b master https://github.com/galois-advertising/common
-git add submodule https://github.com/google/googletest.git gtest
-cd gtest
-git checkout release-1.10.0
-git add gtest
-git commit -m "Add gparallel"
+$ cd your-project
+$ git add submodule -b master https://github.com/galois-advertising/gparallel
+$ git add submodule -b master https://github.com/galois-advertising/common
+$ git add submodule https://github.com/google/googletest.git gtest
+$ cd gtest
+$ git checkout release-1.10.0
+$ cd ..
+$ git add gtest
+$ git commit -m "Add gparallel"
 ```
 
 并且修改`CMakeLists.txt`，加入：
