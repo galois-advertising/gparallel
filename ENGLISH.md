@@ -31,9 +31,9 @@ Firstly, set `gparallel` and `common` and `gtest` as your `git submodule`.
 
 ```shell
 $ cd your-project
-$ git add submodule -b master https://github.com/galois-advertising/gparallel
-$ git add submodule -b master https://github.com/galois-advertising/common
-$ git add submodule https://github.com/google/googletest.git gtest
+$ git submodule add -b master https://github.com/galois-advertising/gparallel
+$ git submodule add -b master https://github.com/galois-advertising/common
+$ git submodule add https://github.com/google/googletest.git gtest
 $ cd gtest
 $ git checkout release-1.10.0
 $ cd ..
