@@ -15,9 +15,8 @@
 ## œ¬‘ÿ±‡“Îtest∫Õdemo
 
 ```shell
-$ git clone git@github.com:galois-advertising/gparallel.git
+$ git clone --recurse-submodules git@github.com:galois-advertising/gparallel.git
 $ cd gparallel
-$ git submodule update --init --recursive
 $ mkdir build
 $ cd build
 $ cmake ..
