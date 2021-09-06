@@ -3,16 +3,16 @@
 [![Build Status](https://www.travis-ci.org/galois-advertising/gparallel.svg?branch=master)](https://www.travis-ci.org/galois-advertising/gparallel)
 
 
-`gparallel`��һ����Ծ��и������̻��߼��ĵ���ʽ��Ϣ����ϵͳ����ƵĲ���������ȿ�ܡ�ʹ��`Meta Programming`����������������������Զ��Ƶ�������ϵ������`DAG(Directed acyclic graph)`�����в���������ȡ�
+`gparallel`是一个针对具有复杂流程或逻辑的单体式信息检索系统而设计的并行任务调度框架。使用`Meta Programming`技术根据任务的输入和输出自动推导依赖关系，生成`DAG(Directed acyclic graph)`并进行并行任务调度。
 
 # Quick start
 
-* ��������
+* 编译依赖
     - g++8
     - boost_log-mt v1.70
     - gtest v1.10.0
 
-## ���ر���test��demo
+## 下载编译test和demo
 
 ```shell
 $ git clone git@github.com:galois-advertising/gparallel.git
@@ -26,9 +26,9 @@ $ ./test
 $ ./demo
 ```
 
-## ��gparallel��Ϊ����Ŀ��һ����
+## 将gparallel作为你项目的一部分
 
-���Ƚ�`gparallel`�Լ���������`common`��`gtest`����Ϊ`git submodule`��
+首先将`gparallel`以及所依赖的`common`和`gtest`设置为`git submodule`。
 
 ```shell
 cd your-project
@@ -41,7 +41,7 @@ git add gtest
 git commit -m "Add gparallel"
 ```
 
-�����޸�`CMakeLists.txt`�����룺
+并且修改`CMakeLists.txt`，加入：
 
 ```cmake
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/common/util/include")
@@ -65,18 +65,18 @@ ADD_EXECUTABLE(your-bin ...)
 TARGET_LINK_LIBRARIES(your-bin common gparallel)
 ```
 
-# ��������
+# 背景介绍
 
-���ڵ�����ҵ��ϵͳ����ϵͳ�������ڣ�ϵͳҵ�񻹱Ƚϼ򵥣�ÿ��`��������`����ʱ��Ҫִ�е�ҵ���߼�Ҳ�Ƚϵ�һ����ʱ���󼶱��`���ݱ���`�Ƚ��٣���Щ�����ĸ�ֵ˳����������ϵҲһĿ��Ȼ��ϵͳ������ά����
+对于单体型业务系统，在系统建立初期，系统业务还比较简单，每次`检索请求`到来时需要执行的业务逻辑也比较单一，此时请求级别的`数据变量`比较少，这些变量的赋值顺序与依赖关系也一目了然，系统很容易维护。
 
-���ǣ����ſ�������Խ��Խ�࣬��Ҷ�����������Լ���`ҵ���߼�`���µ�`���ݱ���`����ʱ�������ӵ��˼��ٸ�������֮��ĸ�ֵ˳����������ϵ��ʼ��ø��ӣ�һЩ�����߼��������������е����̽ṹ���׳Ʒ��ߣ�������ϵͳ�������⡣û��һ������˵�����Щ����֮���������ϵ�Լ���Щҵ���߼�֮���ִ��˳��ÿ���µĿ��������ı�����ÿ���Ų����ⶼ��ʱ������
+但是，随着开发的人越来越多，大家都在上面加入自己的`业务逻辑`和新的`数据变量`，此时变量增加到了几百个，变量之间的赋值顺序与依赖关系开始变得复杂，一些代码逻辑甚至打破了已有的流程结构（俗称飞线），整个系统难以理解。没有一个人能说清楚这些变量之间的依赖关系以及这些业务逻辑之间的执行顺序，每次新的开发都如履薄冰，每次排查问题都耗时耗力。
 
-���ڶ��˲��룬�����ܼ���ϵͳ����θ���������֯�����͵����ݣ���θ��õ�ʵ�ַ��ӵ�ҵ���߼��������Ϊ��Ҫ`gparallel`������.
+对于多人参与，迭代密集的系统，如何更合理地组织各类型的数据，如何更好地实现繁杂的业务逻辑，这就是为需要`gparallel`的理由.
 
 
-> `gparallel`��һ�����`DAG(Directed acyclic graph)`�Ĳ���֧���Զ������Ƶ���������ȿ�ܡ�
+> `gparallel`是一款基于`DAG(Directed acyclic graph)`的并且支持自动依赖推导的任务调度框架。
 
-`DAG`�ڼ�����������Ź㷺��Ӧ�ã������ڴ����ݼ����п���ʹ��DAGָ��Hadoop�����ִ��˳��ȵȡ������������Ҳ���㷺Ӧ�ã���Դ������DAG-based���ȿ��Ҳ�кܶ࣬����[cpp-taskflow](https://github.com/cpp-taskflow/cpp-taskflow)�����ǣ��������п�ܶ������� **�ֹ����õķ�ʽ** ���ɵ���DAG��������һ��ӵ���ĸ�����ĵ���ϵͳ�У�`cpp-taskflow`��Ҫͨ�����淽ʽ������DAG��
+`DAG`在计算机领域有着广泛的应用，例如在大数据计算中可以使用DAG指导Hadoop任务的执行顺序等等。在软件设计中也被广泛应用，开源社区中DAG-based调度框架也有很多，例如[cpp-taskflow](https://github.com/cpp-taskflow/cpp-taskflow)。但是，几乎所有框架都采用了 **手工配置的方式** 生成调度DAG。例如在一个拥有四个任务的调度系统中，`cpp-taskflow`需要通过下面方式来配置DAG。
 
 ```cpp
     auto [A, B, C, D] = taskflow.emplace(
@@ -93,53 +93,53 @@ TARGET_LINK_LIBRARIES(your-bin common gparallel)
 ```
 <img align="right" width="20%" src="./image/cpp-task.png">
 
-�����������Ҫ����Ԥ�ڵ�DAGͼ��Ҫ�˹���ʽ����ÿ�����ڵ�֮���������ϵ�����ַ�ʽ��Ȼ����Ƚ�ֱ�ۣ�����ȱ��Ҳ�ǳ����ԣ�
+上面代码中想要生成预期的DAG图需要人工显式定义每两个节点之间的依赖关系，这种方式虽然理解比较直观，但是缺点也非常明显：
 
-* **���д��������ʱ���˹�����DAGͼ�Ƚ����Ѳ������׳�������ʵ�е�ҵ��ϵͳһ���Ƕ���ͬʱ�����������Ҫģ��owner�����е�����ڵ�֮���������ϵ�����˹���������ά���Խϲ**
-* **��ҵ�����кܶ�ҵ�������������������ķ�ʽ�������������������Ҫ���Ѵ���ʱ������ϵͳ�߼�������������ʾǿ��ת��Ϊ����������ʾ���������ϵͳ����ʱ������**
+* **在有大量任务的时候，人工定义DAG图比较困难并且容易出错。现实中的业务系统一般是多人同时开发，这就需要模块owner对所有的任务节点之间的依赖关系进行人工梳理，可维护性较差。**
+* **工业环境中很多业务，往往以数据流驱动的方式表达会更加清晰，这就需要花费大量时间来将系统逻辑从数据驱动表示强行转化为任务驱动表示来适配调度系统，耗时耗力。**
 
-# gparallel��ν������
+# gparallel如何解决问题
 
-gparallel����Ҫ˼����3����
+gparallel的主要思想有3个：
 
-* `���ݻ���`�����������ݳ�Ա������**ҵ���߼�**��**����״̬**����Ϊ��ͬ�ļ��ϡ�
-* `�����Ƶ�`�������еĴ����߼������չ��ܻ���Ϊ��ͬ��task�ڵ㣬�����Զ��Ƶ�task�ڵ�֮���������ϵ������DAG��
-* `�������`��ͨ���������򣬽�`DAG`ת��Ϊ`ƫ��`��ʾ����ʹ��thread����coroutine��task���е��ȡ�
+* `数据划分`：将所有数据成员，按照**业务逻辑**和**数据状态**划分为不同的集合。
+* `依赖推导`：将所有的代码逻辑，按照功能划分为不同的task节点，并且自动推导task节点之间的依赖关系，建立DAG。
+* `任务调用`：通过拓扑排序，将`DAG`转化为`偏序`表示，并使用thread或者coroutine对task进行调度。
 
-## ���ݻ���
+## 数据划分
 
-�ڼ���ϵͳ�У�`����`һ�����ָ���������������洢�м��������ս���ı���������洢����`std::list`���洢�����`std::string`��gparallel��Ҫ��2���ǶȽ��л��֣�
+在检索系统中，`数据`一般就是指检索过程中用来存储中间结果和最终结果的变量，比如存储广告的`std::list`，存储标题的`std::string`。gparallel主要从2个角度进行划分：
 
-* `����ҵ���߼�`���Ѳ�ͬҵ���߼�����Ҫ�õ������ݻ���Ϊ��ͬ�ļ��ϡ������в�ͬ�Ĺ��Ӫ����Ʒ�����Զ����Լ���User��Plan��Ad�ļ��ϣ��Լ�һЩ�洢���м����ı�����Ϊ�˷��������������ô�д��ĸ����ʾ����ҵ���߼����ֳ��������ݼ��ɣ�����`A`��`B`��`C`�ȵȡ�
+* `按照业务逻辑`：把不同业务逻辑所需要用到的数据划分为不同的集合。比如有不同的广告营销产品，各自都有自己的User、Plan和Ad的集合，以及一些存储数中间结果的变量。为了方便描述，我们用大写字母来表示按照业务逻辑划分出来的数据即可，例如`A`、`B`、`C`等等。
 
-* `��������״̬`������һ�������ڷ�����ͬһ��ҵ������ݼ���(A)���ڲ�ͬ�Ľ׶Σ��ֿ��Ի���Ϊ��ͬ��״̬������һ�������У���ʼ״̬�ǿ�(empty)����������Ժ���N�����(inited)���־�����һ�ΰ���CTR������(ranked)���������һ�νض�(truncate)����ô��Ӧ�ĸ�״̬`A_empty`��`A_inited`��`A_ranked`��`A_truncated`��
+* `按照数据状态`：更进一步，对于服务于同一个业务的数据集合(A)，在不同的阶段，又可以划分为不同的状态。例如一个广告队列，初始状态是空(empty)，经过填充以后有N条广告(inited)，又经过了一次按照CTR的排序(ranked)，最后经历了一次截断(truncate)，那么对应四个状态`A_empty`，`A_inited`，`A_ranked`，`A_truncated`。
 
-Ϊ�˷������⣬���ǰѻ��ֳ�����ÿ���Ӽ���������ͬ�Ľ׶Σ�������`meta`��ǰ���ᵽ��`A_empty`��`A_inited`��`A_ranked`��`A_truncate`����`meta`����gparallel�У�������[`DECL_META`](include/meta.h)��������һ��`meta`��
+为了方便理解，我们把划分出来的每个子集（包含不同的阶段），叫做`meta`。前面提到的`A_empty`，`A_inited`，`A_ranked`，`A_truncate`都是`meta`。在gparallel中，我们用[`DECL_META`](include/meta.h)宏来定义一个`meta`。
 
-> meta����������**ָ��ҵ��**����Ҫ���������ݣ�ָ���ڵ㣩�ļ��ϵ�һ��**���ݽṹ**��
+> meta：用来描述**指定业务**所需要的所有数据（指定节点）的集合的一种**数据结构**。
 
-����gparallel�����ݵ�2��ݽ����ַ�ʽ�ǳ���Ҫ����Ϊgparallel��DAG�Զ��Ƶ��������������ڲ�ͬ��meta��
+理解gparallel对数据的2层递进划分方式非常重要，因为gparallel的DAG自动推导过程正是依赖于不同的meta。
 
-��ʵ�е�ϵͳ�У����ݳ�Աһ�������һ������`context`����`thread_data`�Ľṹ���С�����˼�壬��Щ���ݵ����÷�Χ����һ������һ���Ƚϳ����������һ���������̳߳��е�һ���߳������������������󼶱�����ݣ�����Ҳ���̼߳�������ݡ����`context`����`thread_data`���ͣ��ڴ���ʵ����ͨ����`meta_storage_t`����ʾ������һ�μ������õ����������ݣ���ͳһ�洢�����
+现实中的系统中，数据成员一般放置在一个叫做`context`或者`thread_data`的结构体中。顾名思义，这些数据的作用范围就是一次请求，一个比较常见的设计是一次请求由线程池中的一个线程来独立负责，所以请求级别的数据，往往也是线程级别的数据。这个`context`或者`thread_data`类型，在代码实现中通常用`meta_storage_t`来表示，即所一次检索中用到的所有数据，都统一存储在这里。
 
-ͨ������`getter`��`setter`���Զ��Ӽ���Ҫ������Ԫ�ؽ���ָ�������������`getter`��`setter`�ʹ������`meta`�а���������ݳ�Ա��
+通过定义`getter`和`setter`可以对子集需要包含的元素进行指定，如果定义了`getter`和`setter`就代表这个`meta`中包含这个数据成员。
 
-�Ӽ�֮��Ҳ���Ի��������ԭ������������е�`�̳�`��һ���ġ�ͬ�������һ������������һ��`meta`����Ҳͬ�����������`meta`�ĸ�`meta`��`gparallel`���Ƶ�����ʱ���Զ����̳й�ϵҲ�������ڡ�`�̳�`���Ƶ���ҪĿ����Ϊ�˱����ظ����弯�ϵ�Ԫ�أ����Ӵ���Ŀ�ά���ԡ���ʵ���У�ͨ�����ܶ�ҵ���õ����ݵ�������Ϊһ��`meta`�����ڵ���ҵ���`meta`�����Դ�ǰ��Ĺ���`meta`���м̳С�
+子集之间也可以互相包含，原理与面向对象中的`继承`是一样的。同理，如果一个任务依赖于一个`meta`，则也同样依赖于这个`meta`的父`meta`，`gparallel`在推导依赖时会自动将继承关系也考虑在内。`继承`机制的主要目的是为了避免重复定义集合的元素，增加代码的可维护性。在实践中，通常将很多业务公用的数据单独定义为一个`meta`，属于单独业务的`meta`，可以从前面的公共`meta`进行继承。
 
-ͨ����������ӿ�������`meta_storage_t`��`meta`��`�̳�`�Ĺ�ϵ��
+通过下面的例子可以理解`meta_storage_t`、`meta`和`继承`的关系。
 
 <div><img align="center" width="100%" src="./image/meta.png"></div>
 
-ͨ����ͼ���Կ������������ݱ�������`thread_data`���������(`meta_storage_t`)��ͨ������`meta`��`thread_data`�е����ݻ���Ϊ�������ϣ�
-* `meta_common`������`thread_data::id`
-* `meta_a`������`thread_data::business_a`���Ҽ̳���`meta_common`������Ԫ�ء�
-* `meta_b`������`thread_data::business_b`���Ҽ̳���`meta_common`������Ԫ�ء�
+通过上图可以看到，所有数据被放置在`thread_data`这个对象中(`meta_storage_t`)，通过三个`meta`将`thread_data`中的数据划分为三个集合：
+* `meta_common`包含了`thread_data::id`
+* `meta_a`包含了`thread_data::business_a`并且继承了`meta_common`的所有元素。
+* `meta_b`包含了`thread_data::business_b`并且继承了`meta_common`的所有元素。
 
-## ������
+## 任务定义
 
-��`gparallel`�У�ʹ��һ��������ʾһ����������񣬺����Ĳ�����ʾ�����`����`��`���`���κ�һ��`meta`�ȿ�����Ϊ`����`��Ҳ������Ϊ`���`����������2��ģ���װ��`input`��`output`�����`meta`��`input`��װ�����������Ὣ�䵱��һ���������ݣ�ͬ�������`output`��װ����ᵱ�������
+在`gparallel`中，使用一个函数表示一个具体的任务，函数的参数表示任务的`输入`和`输出`。任何一个`meta`既可以作为`输入`，也可以作为`输出`。这里引入2个模版包装器`input`和`output`。如果`meta`用`input`包装，则任务函数会将其当作一个输入数据，同理如果用`output`包装，则会当作输出。
 
-��ʾ����ĺ��������붨��Ϊ��ľ�̬��Ա�������������ֱ���Ϊ`process`����������Ϊ`void`�����磺
+表示任务的函数，必须定义为类的静态成员函数，函数名字必须为`process`，返回类型为`void`。例如：
 
 ```cpp
 struct DemoNode {
@@ -149,12 +149,12 @@ struct DemoNode {
     }
 }
 ```
-�����`DemoNode`ʵ���˽�`business_a`��`business_b`�ĺ͸�ֵ��`business_c`���߼���
-`process`��������ӵ��������`����`��������`���`������û��`����`�Ľڵ���Ϊ��ʼ�ڵ�֮һ��û��`���`�Ľڵ���Ϊ��ֹ�ڵ�֮һ��
+上面的`DemoNode`实现了将`business_a`和`business_b`的和赋值给`business_c`的逻辑。
+`process`函数可以拥有任意多个`输入`和任意多个`输出`。其中没有`输入`的节点作为起始节点之一，没有`输出`的节点作为终止节点之一。
 
-## �������
+## 任务调度
 
-ͨ��`register_node`���������нڵ�ע�ᵽ`DAG`�к�ʹ��`setup_dag_schema`�������Զ�ʵ�ֽڵ����������Լ�`DAG`���ɡ�������ɵ�`DAG`����`��������`�����ܵõ��������˳�򡣺���ɸ��ݾ��������ʵ�ֶ��̻߳��߶�Э�̵��ȡ�
+通过`register_node`函数将所有节点注册到`DAG`中后，使用`setup_dag_schema`函数可自动实现节点依赖分析以及`DAG`生成。针对生成的`DAG`进行`拓扑排序`，就能得到任务调度顺序。后面可根据具体情况，实现多线程或者多协程调度。
 
 ```cpp
 dag_schema<thread_data> nodes;
@@ -169,27 +169,27 @@ if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
 
 <center><img align="center" src="./image/dispatch.png"></center>
 
-# gparallelʵս
+# gparallel实战
 
-�ڱ�С���У����һ����ʵ�ĳ���������`gparallel`��ʹ���߼���
+在本小结中，会从一个现实的场景来描述`gparallel`的使用逻辑。
 
-> ������������һ��ָ���Ĺ����У��ֱ�������`CTR`(�����)ֵ��`CPM`(ǧ��չʾ�ɱ�)����䵽���Ķ�Ӧ�ֶΣ����ֱ���`CTR`��`CPM`�������������2���µĹ����й�����ʹ�á�
+> 问题描述：对一个指定的广告队列，分别请求其`CTR`(点击率)值和`CPM`(千次展示成本)并填充到广告的对应字段，最后分别按照`CTR`和`CPM`进行排序后生成2个新的广告队列供下游使用。
 
-���������ǹ�����ϵͳ����һ���Ƚϵ��͵��߼��������Ĵ�����[./demo/advprocess.cpp](./demo/advprocess.cpp)��
+上述流程是广告检索系统里面一个比较典型的逻辑，完整的代码在[./demo/advprocess.cpp](./demo/advprocess.cpp)。
 
-## ���ݻ���
+## 数据划分
 
-������������һ������Ҫ�õ������ݶ���
+我们首先梳理一下所需要用到的数据对象：
 
-�������� | ���� |  ����  
+数据名称 | 类型 |  含义  
 -|-|-
-advs_original|  advlist_t |  ԭʼ�Ĺ����� |
-ctr_data |  advlist_t | ģ�ͷ��ص�ctr����|
-cpm_data |  advlist_t |  ģ�ͷ��ص�cpm����|
-advs_ctr_ordered | ctr_response_t |  �����ctr����Ĺ�����|
-advs_cpm_ordered | cpm_response_t |  �����cpm����Ĺ�����|
+advs_original|  advlist_t |  原始的广告队列 |
+ctr_data |  advlist_t | 模型返回的ctr数据|
+cpm_data |  advlist_t |  模型返回的cpm数据|
+advs_ctr_ordered | ctr_response_t |  输出的ctr排序的广告队列|
+advs_cpm_ordered | cpm_response_t |  输出的cpm排序的广告队列|
 
-��������Ķ��壬���Ƕ������ݼ��ϣ�ҵ��ִ����Ҫ�õ����������ݶ�����`thread_data`��������У�
+根据上面的定义，我们定义数据集合，业务执行需要用到的所有数据都放在`thread_data`这个集合中：
 
 ![demo_thread_data.png](./image/demo_thread_data.png)
 
@@ -204,52 +204,52 @@ public:
 };
 ```
 
-���������Ǹ��ݲ�ͬ��ҵ�񣬽����ϻ���Ϊ��ͬ���Ӽ���ÿ���Ӽ�����һ��`meta`��һ��Ԫ�ؿ���ͬʱ���ڶ��`meta`��`meta`��`meta`֮����Ի��������
-������������������ǿ��Ժ������ܽ��5�������̣�ÿ�������̶���Ӧһ�����ݴ����ڵ㣺 
+接下来我们根据不同的业务，将集合划分为不同的子集，每个子集就是一个`meta`，一个元素可以同时属于多个`meta`，`meta`与`meta`之间可以互相包含。
+根据问题的描述，我们可以很容易总结出5个子流程，每个子流程都对应一个数据处理节点： 
 <table width="60%">
     <thead>
         <tr>
-            <th>����</th><th>�ڵ�����</th><th>����</th><th>���</th>
+            <th>流程</th><th>节点名称</th><th>输入</th><th>输出</th>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td>��ȡCTRֵ</td><td>get_ctr_node</td><td>advs_original</td><td>ctr_data</td>
+            <td>获取CTR值</td><td>get_ctr_node</td><td>advs_original</td><td>ctr_data</td>
         </tr>
         <tr>
-            <td>��ȡCPMֵ</td><td>get_cpm_node</td><td>advs_original</td><td>cpm_data</td>
+            <td>获取CPM值</td><td>get_cpm_node</td><td>advs_original</td><td>cpm_data</td>
         </tr>
         <tr>
-            <td>����ֶ�</td><td>fill_node</td>
+            <td>填充字段</td><td>fill_node</td>
             <td>advs_original <br>ctr_data <br>cpm_data</td>
             <td>advs_original*</td>
         </tr>
         <tr>
-            <td>����CTR<br>�������</td><td>gen_ctr_node</td><td>advs_original*</td>
+            <td>生成CTR<br>排序队列</td><td>gen_ctr_node</td><td>advs_original*</td>
             <td>advs_ctr_ordered</td>
         </tr>
         <tr>
-            <td>����CPM<br>�������</td><td>gen_cpm_node</td>
+            <td>生成CPM<br>排序队列</td><td>gen_cpm_node</td>
             <td>advs_original*</td><td>advs_cpm_ordered</td>
         </tr>
     </tbody>
 </table>
 
 
-���Կ���ԭʼ����Ĺ�������`advs_original`���������ǽ����װΪmeta`original`��
+可以看到原始输入的广告队列是`advs_original`，这里我们将其封装为meta`original`。
 
-`get_ctr_node`�ڵ��`get_cpm_node`�ڵ�ͨ��meta`original`�ֱ��ȡ`ctr_data`��`cpm_data`�������ݣ�����������������meta`ctr`��meta`cpm`����װ��
+`get_ctr_node`节点和`get_cpm_node`节点通过meta`original`分别获取`ctr_data`和`cpm_data`两份数据，这两份数据我们用meta`ctr`和meta`cpm`来封装。
 
-`fill_node`�ڵ�Թ����н���������䣬����ע�⣬�ڵ����������meta`original`���������meta`original_with_ctr_cpm`����2��meta��ʵ�����϶���`advs_original`�ķ�װ��������Ϊ����2���׶�(�����ǰ������)�����Էֱ���2����ͬ��meta����ʾ����ʵ���ϣ����ǿ���ֱ��ʹ�ü̳й��ܣ�����meta`original`��
+`fill_node`节点对广告队列进行数据填充，这里注意，节点的输入中有meta`original`，输出中有meta`original_with_ctr_cpm`。这2个meta其实本质上都是`advs_original`的封装，但是因为属于2个阶段(即填充前和填充后)，所以分别用2个不同的meta来表示，在实现上，我们可以直接使用继承功能，复用meta`original`。
 
-`gen_ctr_node`��`gen_cpm_node`�����붼����meta`original_with_ctr_cpm`����ʾ�������������`advs_original`���������ǰ��
+`gen_ctr_node`和`gen_cpm_node`的输入都包含meta`original_with_ctr_cpm`，表示其依赖于填充后的`advs_original`而不是填充前。
 
-�����Ϳ��Ը��ݲ�ͬ��ҵ���߼�����`thread_data`���ϻ���Ϊ��ͬ��`meta`��ÿ��ҵ��ֻ��Ҫ��ע�Ӽ���Ҫ�õ���Щ`meta`��������Щ`meta`���ɡ�
+这样就可以根据不同的业务逻辑，把`thread_data`集合划分为不同的`meta`，每个业务只需要关注子集需要用到哪些`meta`，生成哪些`meta`即可。
 ![demo_meta.png](./image/demo_meta.png)
 
-## ������
+## 任务定义
 
-����ʵ��`get_ctr_node`��`get_cpm_node`����������ڵ㡣
+首先实现`get_ctr_node`和`get_cpm_node`这两个任务节点。
 ```cpp
 struct get_ctr_node {
     static void process(input<original> ori, output<ctr> ctr) {
@@ -274,9 +274,9 @@ struct get_cpm_node {
     }
 };
 ```
-����������Ĺ������ƣ����Ǹ���`original`�д洢�����й�棬��ȡ��Ӧ��`�����`��`ǧ��չʾ�ɱ�`���ݣ����ҷֱ𱣴浽`ctr`��`cpm`������meta������Ϊ�˼򻯣�����ȡһЩ�����������Ϊ`ctr`��Ϊ`cpm`����ʵ��������Ҫͬ�������첽����ģ�ͷ���������ȡ��
+这两个任务的功能相似，都是根据`original`中存储的所有广告，获取对应的`点击率`和`千次展示成本`数据，并且分别保存到`ctr`和`cpm`这两个meta。这里为了简化，我们取一些随机的数字作为`ctr`作为`cpm`。现实中往往需要同步或者异步请求模型服务器来获取。
 
-������ʵ��`fill_node`��
+接下来实现`fill_node`。
 ```cpp
 struct fill_node {
     static void process(input<ctr> ctr, input<cpm> cpm, input<original> ori, 
@@ -291,9 +291,9 @@ struct fill_node {
     }
 };
 ```
-`fill_node`�ڵ㽫ǰ��`get_ctr_node`��`get_cpm_node`�������ڵ�������Ϊ�Լ������룬�������`original_with_ctr_cpm`��������Կ�����`original`��`original_with_ctr_cpm`�ֱ���Ϊ�ڵ��������������Ȼ������meta�а��������ݶ���`advs_original`�����Ƕ�Ӧ��**��ͬ��״̬**��`original`������`advs_original`һ��ʼ��״̬����`original_with_ctr_cpm`�������Ѿ������`ctr`��Ϊ`cpm`���ݵ�״̬��
+`fill_node`节点将前面`get_ctr_node`和`get_cpm_node`这两个节点的输出作为自己的输入，最后生成`original_with_ctr_cpm`。这里可以看到，`original`和`original_with_ctr_cpm`分别作为节点的输入和输出，虽然这两个meta中包含的数据都是`advs_original`，但是对应了**不同的状态**。`original`代表了`advs_original`一开始的状态，而`original_with_ctr_cpm`代表了已经填充了`ctr`作为`cpm`数据的状态。
 
-Ȼ��ʵ��`gen_ctr_node`��`gen_cpm_node`��
+然后实现`gen_ctr_node`和`gen_cpm_node`。
 ```cpp
 struct gen_ctr_node {
     static void process(input<original_with_ctr_cpm> ori_ctr_cpm, 
@@ -318,9 +318,9 @@ struct gen_cpm_node {
     }
 };
 ```
-������Ҫע����ǣ�`gen_ctr_node`��`gen_cpm_node`�������ڵ㣬��Ҫ����**�Ѿ������`ctr`��Ϊ`cpm`����**��`advs_original`����������meta����Ϊ`original_with_ctr_cpm`����һ�����������ȷ��DAG��˵�ǳ���Ҫ��`gparallel`����ͨ������ͬһ���ݵĲ�ͬ�׶Σ���ʵ����ȷ��������ȡ�
+这里需要注意的是，`gen_ctr_node`和`gen_cpm_node`这两个节点，需要的是**已经填充了`ctr`作为`cpm`数据**的`advs_original`，所以输入meta必须为`original_with_ctr_cpm`。这一点对于生成正确的DAG来说非常重要。`gparallel`正是通过区分同一数据的不同阶段，来实现正确的任务调度。
 
-���`end_node`�����еĽ�����л��ܣ������������Ρ�
+最后，`end_node`对所有的结果进行汇总，并反馈给下游。
 ```cpp
 struct end_node {
     static void process(input<ctr_ordered_advlist> ctr, input<cpm_ordered_advlist> cpm) {
@@ -335,22 +335,22 @@ struct end_node {
 };
 ```
 
-## �������
+## 任务调度
 
-�����е�meta��node��������Ժ����ǿ���ͨ���������̽���������ȡ�
-����������Ҫ������Ӧ���ڴ����洢�������е����ݱ�����������������һ��`thread_data`��ʵ����
+在所有的meta和node都定义好以后，我们可以通过下面流程进行任务调度。
+首先我们需要申请相应的内存来存储我们所有的数据变量，这里我们申请一个`thread_data`的实例：
 
 ```cpp
 thread_data td{{advertisement(1), advertisement(2), advertisement(3)}, {},{},{},{}};
 ```
 
-���ǻ���Ҫһ��`�ڵ�����`����������е����ݴ����ڵ㣺
+我们还需要一个`节点容器`，来存放所有的数据处理节点：
 
 ```cpp
 dag_schema<thread_data> nodes;
 ```
 
-���������ǽ����е�`�ڵ�`��ע�ᵽ�ղ������`�ڵ�����`�С�
+接下来我们将所有的`节点`，注册到刚才申请的`节点容器`中。
 
 ```cpp
 register_node<thread_data, get_ctr_node, get_cpm_node>::reg(nodes);
@@ -358,15 +358,15 @@ register_node<thread_data, fill_node>::reg(nodes);
 register_node<thread_data, gen_ctr_node, gen_cpm_node, end_node>::reg(nodes);
 ```
 
-`register_node`ģ�渺��ע��ڵ㵽����`nodes`�У����е�һ��ģ����������������������մ洢���࣬Ҳ����`meta_storage_t`��ʣ��������ģ������ֱ�Ϊ����node��`reg`�������������Ϊ`dag_schema`���͵Ľڵ�����ʵ����
+`register_node`模版负责注册节点到容器`nodes`中，其中第一个模版参数是我们所有数据最终存储的类，也就是`meta_storage_t`。剩余任意多个模版参数分别为各个node。`reg`函数的输入参数为`dag_schema`类型的节点容器实例。
 
-�������Ƶ����нڵ��������ϵ��
+接下来推导所有节点的依赖关系：
 
 ```cpp
 setup_dag_schema<thread_data>(nodes);
 ```
 
-������Ƕ�DAG��������нڵ����`��������`�����Ұ���������˳�����ν��е��ã�
+最后，我们对DAG上面的所有节点进行`拓扑排序`，并且按照排序后的顺序依次进行调用：
 
 ```cpp
 if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
@@ -376,14 +376,14 @@ if (auto tasks = topological_sort<thread_data>(nodes); tasks) {
     }
 }
 ```
-����ִ�У�
+编译执行：
 ```shell
 $ cd build
 $ cmake ../
 $ make demo
 $ ./demo
 ```
-������Ǵ���debug��־���Ϳ�����demo������п��������DAG��Ϣ��
+如果我们打开了debug日志，就可以在demo的输出中看到下面的DAG信息：
 ```
 [2020-05-20 23:24:11.082883] [] [info][~/gparallel/include/dag_schema.h][127]node_depends_after
 http://graphviz.it/#
@@ -400,11 +400,11 @@ size="8,5";
 }
 ```
 
-ͨ��[http://graphviz.it/#](http://graphviz.it/#)�����ǿ��Կ���`gparallel`�Զ��Ƶ��õ���DAG��
+通过[http://graphviz.it/#](http://graphviz.it/#)，可以看到`gparallel`自动推导得到的DAG。
 
 ![demo_dag.png](./image/demo_dag.png)
 
- ͬʱ���Կ���ȫ��ҵ��ִ�еĽ����
+ 同时可以看到全部业务执行的结果：
  ```
 [2020-05-20 23:24:11.084784] [] [info][advprocess.cpp][141]Execute[get_ctr_node]
 [2020-05-20 23:24:11.084792] [] [info][advprocess.cpp][63][gparallel] get_ctr_node
@@ -427,7 +427,7 @@ size="8,5";
 [2020-05-20 23:24:11.085069] [] [info][advprocess.cpp][127]CTR ordered:[3]
 [2020-05-20 23:24:11.085076] [] [info][advprocess.cpp][127]CTR ordered:[2]
 [2020-05-20 23:24:11.085082] [] [info][advprocess.cpp][127]CTR ordered:[1]
-```
+ ```
 
 
 
