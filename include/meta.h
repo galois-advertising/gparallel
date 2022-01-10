@@ -5,6 +5,7 @@
 
 namespace galois::gparallel {
 
+// A `Mixin` class used to config traits
 template <class T, class _meta_storage_t, 
     template <class> class _meta_name, 
     template <class> class... _super_meta_names>
