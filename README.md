@@ -429,18 +429,18 @@ size="8,5";
 [2020-05-20 23:24:11.085082] [] [info][advprocess.cpp][127]CTR ordered:[1]
  ```
 
-Some friends ask how to execute this DAG?
+Some friends ask how to execute this DAG parallelly?
 One method is:
 ```C++
-void invoke(Node &node, std::latch &done) {
-    std::latch dep_done(node.dependency_list.size());
+void invoke(Node &node, std::shared_ptr<std::latch> done) {
+    std::shared_ptr<std::latch> dep_done = std::make_shared<>(node.dependency_list.size());
     for (auto &dep : node.dependency_list) {
         invoke(dep, dep_done);
     }
-    thread_pool.push([&node, &done, auto dep_done = std::move(dep_done)](){
-        dep_done.wait();
+    thread_pool.push([&node, done, dep_done](){
+        dep_done->wait();
         node.execute();
-        done.count_down();
+        done->count_down();
     })
 }
 
@@ -448,9 +448,9 @@ int main() {
     std::list<Node> node_list;
     // Find the final node
     Node &final_node = xxx;
-    std::latch done(1);
+    std::shared_ptr<std::latch> done = std::make_shared<>(1);
     invoke(final_node, latch);
-    latch.wait();
+    latch->wait();
     // Final result is ready here
 }
 ```
