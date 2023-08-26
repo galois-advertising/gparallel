@@ -430,7 +430,8 @@ size="8,5";
  ```
 
 Some friends ask how to execute this DAG parallelly?
-One method is:
+
+One solution is:
 ```C++
 void invoke(Node &node, std::shared_ptr<std::latch> done) {
     std::shared_ptr<std::latch> dep_done = std::make_shared<>(node.dependency_list.size());
