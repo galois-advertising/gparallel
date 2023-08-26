@@ -429,7 +429,7 @@ size="8,5";
 [2020-05-20 23:24:11.085082] [] [info][advprocess.cpp][127]CTR ordered:[1]
  ```
 
-How to execute this DAG?
+Some friends ask how to execute this DAG?
 One method is:
 ```C++
 void invoke(Node &node, std::latch &done) {
