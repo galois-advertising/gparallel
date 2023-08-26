@@ -429,7 +429,32 @@ size="8,5";
 [2020-05-20 23:24:11.085082] [] [info][advprocess.cpp][127]CTR ordered:[1]
  ```
 
+How to execute this DAG?
+One method is:
+```C++
+void invoke(Node &node, std::latch &done) {
+    std::latch dep_done(node.dependency_list.size());
+    for (auto &dep : node.dependency_list) {
+        invoke(dep, dep_done);
+    }
+    thread_pool.push([&node, &done, auto dep_done = std::move(dep_done)](){
+        dep_done.wait();
+        node.execute();
+        done.count_down();
+    })
+}
 
+int main() {
+    std::list<Node> node_list;
+    // Find the final node
+    Node &final_node = xxx;
+    std::latch done(1);
+    invoke(final_node, latch);
+    latch.wait();
+    // Final result is ready here
+}
+```
+By huyifeng (2023/08/26)
 
 
 
